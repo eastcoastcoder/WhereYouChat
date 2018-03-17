@@ -6,9 +6,12 @@ function jumpToLocation(map) {
   } 
   function success(position) {
     var zoom = 16;
+    var accuracyRadius = 500; // Hardcoded
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
+    L.marker([latitude, longitude]).addTo(map);
+    L.circle([latitude, longitude], accuracyRadius).addTo(map);
     map.setView([latitude, longitude], zoom);
   }
   function error(e) {

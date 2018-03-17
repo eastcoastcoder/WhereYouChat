@@ -50,7 +50,6 @@
     <div id="map" style="width: 800px; height: 600px; border: 1px solid #ccc"></div>
     <script src="./index.js"></script>
     <script>
-        jumpToLocation(map);
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
@@ -64,6 +63,7 @@
             })
         }, {'drawlayer':drawnItems}, { position: 'topright', collapsed: false }).addTo(map);
         
+        jumpToLocation(map);
         map.addControl(new L.Control.Draw({
             edit: {
                 featureGroup: drawnItems,

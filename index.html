@@ -52,12 +52,14 @@
     <script>
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            snapchat = L.tileLayer('https://api.mapbox.com/styles/v1/ethanx94/cjgaaxn871il62sp1e80vkog1/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXRoYW54OTQiLCJhIjoiY2pnYWF0YWZvMW5neTJ5bXQ3d2VuaDBrcCJ9.jYfc6WsaQ7jMNm0GGr27Zw', {maxZoom: 18}),
             osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
-            map = new L.Map('map', {center: new L.LatLng(29.9792, 31.1344), zoom: 15}),
+            map = new L.Map('map', {center: new L.LatLng(37.7220, -89.2043), zoom: 15}),
             drawnItems = L.featureGroup().addTo(map);
 
         L.control.layers({
-            "osm": osm.addTo(map),
+            "snapchat": snapchat.addTo(map),
+            "osm": osm,
             "google": L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', {
                 attribution: 'google'
             })

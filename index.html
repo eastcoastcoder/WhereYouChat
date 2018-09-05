@@ -10,6 +10,7 @@
     <script src="./resources/leaflet.draw/Leaflet.Draw.Event.js"></script>
     <link rel="stylesheet" href="./resources/leaflet.draw/leaflet.draw.css" />
 
+    <script src='http://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
     <script src="./resources/leaflet.draw/Toolbar.js"></script>
     <script src="./resources/leaflet.draw/Tooltip.js"></script>
 
@@ -124,6 +125,21 @@
             }
             return null;
         };
+
+        var places = omnivore.kml('./resources/places.kml')
+        .on('ready', function() {
+            console.log(places);
+            places.eachLayer(function(layer) {
+                let myPopup = '';
+                myPopup += layer.feature.properties.City ? `City: ${layer.feature.properties.City}<br />` : '';
+                myPopup += layer.feature.properties.Month ? `Month: ${layer.feature.properties.Month}<br />` : '';
+                myPopup += layer.feature.properties.Year ? `Year: ${layer.feature.properties.Year}<br />` : '';
+                myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
+                myPopup += layer.feature.properties.Notes ? `Notes: ${layer.feature.properties.Notes}` : '';
+                layer.bindPopup(myPopup);
+            });
+        })
+        .addTo(map);
 
         // Object created - bind popup to layer, add to feature group
         map.on(L.Draw.Event.CREATED, function(event) {

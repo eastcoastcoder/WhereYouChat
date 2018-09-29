@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "rm -rf docs&&parcel build index.html -d docs --public-url ./Leaflet_Sandbox"
+    "build": "rm -rf docs&&parcel build index.html -d docs --public-url /"
   },
   "dependencies": {
     "@mapbox/leaflet-omnivore": "^0.3.4",

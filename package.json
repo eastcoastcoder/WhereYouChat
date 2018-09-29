@@ -1,7 +1,4 @@
 {
-  "scripts": {
-    "build": "rm -rf docs&&parcel build index.html -d docs --public-url http://ethanrichardson.me/Leaflet_Sandbox"
-  },
   "dependencies": {
     "@mapbox/leaflet-omnivore": "^0.3.4",
     "leaflet": "^1.3.4",

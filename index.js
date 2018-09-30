@@ -90,7 +90,7 @@ const places = omnivore.kml('https://cors-anywhere.herokuapp.com/https://batchge
   .addTo(map);
 
 var bitmojiIcon = L.icon({
-    iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.webp?transparent=1',
+    iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',
     iconSize:     [95, 95],
     iconAnchor:   [50, 75],
 });

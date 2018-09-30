@@ -4,7 +4,8 @@ const osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStree
 const snapchat = L.tileLayer('https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ', {maxZoom: 18});
 const fakeSnapchat = L.tileLayer('https://api.mapbox.com/styles/v1/ethanx94/cjgaaxn871il62sp1e80vkog1/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXRoYW54OTQiLCJhIjoiY2pnYWF0YWZvMW5neTJ5bXQ3d2VuaDBrcCJ9.jYfc6WsaQ7jMNm0GGr27Zw', {maxZoom: 18});
 const osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib});
-const map = new L.Map('map', {center: new L.LatLng(37.7220, -89.2043), zoom: 15});
+const nearCDale = new L.LatLng(37.7220, -89.2043);
+const map = new L.Map('map', {center: nearCDale, zoom: 15});
 const drawnItems = L.featureGroup().addTo(map);
 
 L.control.layers({
@@ -94,6 +95,8 @@ var bitmojiIcon = L.icon({
     iconAnchor:   [50, 75],
 });
 
+L.marker(nearCDale, {icon: bitmojiIcon}).addTo(map);
+
 // Object created - bind popup to layer, add to feature group
 map.on(L.Draw.Event.CREATED, function(event) {
     var layer = event.layer;
@@ -128,7 +131,7 @@ function jumpToLocation(map) {
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
-    L.marker([latitude, longitude], {icon: bitmojiIcon}).addTo(map);
+    L.marker([latitude, longitude]).addTo(map);
     L.circle([latitude, longitude], accuracyRadius).addTo(map);
     map.setView([latitude, longitude], zoom);
   }

@@ -74,9 +74,8 @@ const getPopupContent = function(layer) {
     return null;
 };
 
-const places = omnivore.kml('./resources/places.kml')
+const places = omnivore.kml('https://cors-anywhere.herokuapp.com/https://batchgeo.com/map/kml/ethanx94')
   .on('ready', function() {
-      console.log(places);
       places.eachLayer(function(layer) {
           let myPopup = '';
           myPopup += layer.feature.properties.City ? `City: ${layer.feature.properties.City}<br />` : '';

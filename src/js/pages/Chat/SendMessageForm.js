@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { css } from 'react-emotion';
 
 class SendMessageForm extends Component {
   state = {
@@ -23,7 +24,7 @@ class SendMessageForm extends Component {
     return (
       <form
         onSubmit={this.handleSubmit}
-        className="send-message-form"
+        className={SendMessageFormStyle}
       >
         <input
           onChange={this.handleChange}
@@ -35,5 +36,26 @@ class SendMessageForm extends Component {
     );
   }
 }
+
+const SendMessageFormStyle = css`
+  background: var(--send-message-form);
+  display: flex;
+  box-sizing: border-box;
+  height: 60px;
+  & input {
+    width: 100%;
+    padding: 15px 10px;
+    border: none;
+    margin: 0;
+    background: var(--send-message-form);
+    font-weight: 200;
+  }
+  & input:focus {
+    outline-width: 0;
+  }
+  & input::placeholder {
+    color: black;
+  }
+`;
 
 export default SendMessageForm;

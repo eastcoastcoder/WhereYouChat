@@ -88,6 +88,12 @@ const places = omnivore.kml('https://cors-anywhere.herokuapp.com/https://batchge
   })
   .addTo(map);
 
+var bitmojiIcon = L.icon({
+    iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.webp?transparent=1',
+    iconSize:     [95, 95],
+    iconAnchor:   [50, 75],
+});
+
 // Object created - bind popup to layer, add to feature group
 map.on(L.Draw.Event.CREATED, function(event) {
     var layer = event.layer;
@@ -122,7 +128,7 @@ function jumpToLocation(map) {
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
-    L.marker([latitude, longitude]).addTo(map);
+    L.marker([latitude, longitude], {icon: bitmojiIcon}).addTo(map);
     L.circle([latitude, longitude], accuracyRadius).addTo(map);
     map.setView([latitude, longitude], zoom);
   }

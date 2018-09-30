@@ -74,6 +74,13 @@
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@onsenui/fastclick/-/fastclick-1.1.1.tgz#0708ec6c7bdca8b87a028deb0dbb66b92001f737"
 
+"@pusher/chatkit@^0.7.17":
+  version "0.7.17"
+  resolved "https://registry.yarnpkg.com/@pusher/chatkit/-/chatkit-0.7.17.tgz#2f3229e3ec04590924d6f6719da4d1e158825f57"
+  dependencies:
+    pusher-platform "^0.15.1"
+    ramda "^0.25.0"
+
 "@types/node@^6.0.46":
   version "6.0.117"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.117.tgz#ccfc2506001404708528d657aad9c1b931111646"
@@ -6158,6 +6165,10 @@ punycode@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
 
+pusher-platform@^0.15.1:
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/pusher-platform/-/pusher-platform-0.15.1.tgz#e8ff7e59f8440ddae6dd71a50e4796400b7ec62f"
+
 q@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/q/-/q-1.4.1.tgz#55705bcd93c5f3673530c2c2cbc0c2b3addc286e"
@@ -6198,6 +6209,10 @@ raf@3.4.0:
   resolved "https://registry.yarnpkg.com/raf/-/raf-3.4.0.tgz#a28876881b4bc2ca9117d4138163ddb80f781575"
   dependencies:
     performance-now "^2.1.0"
+
+ramda@^0.25.0:
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.25.0.tgz#8fdf68231cffa90bc2f9460390a0cb74a29b29a9"
 
 randomatic@^3.0.0:
   version "3.1.0"

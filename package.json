@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
+    "@pusher/chatkit": "^0.7.17",
     "emotion": "^9.2.6",
     "emotion-server": "^9.2.6",
     "emotion-theming": "^9.2.6",

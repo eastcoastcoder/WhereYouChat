@@ -1,10 +1,40 @@
 {
+  "name": "ethanx94",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "./",
   "dependencies": {
-    "@mapbox/leaflet-omnivore": "^0.3.4",
+    "emotion": "^9.2.6",
+    "emotion-server": "^9.2.6",
+    "emotion-theming": "^9.2.6",
     "leaflet": "^1.3.4",
-    "leaflet-draw": "^1.0.3"
+    "libmoji": "^2.3.0",
+    "onsenui": "^2.10.1",
+    "react": "^16.5.2",
+    "react-app-rewire-hot-loader": "^1.0.1",
+    "react-app-rewired": "^1.6.2",
+    "react-dom": "^16.5.2",
+    "react-emotion": "^9.2.6",
+    "react-hot-loader": "^4.3.11",
+    "react-leaflet": "^2.0.1",
+    "react-onsenui": "^1.11.1",
+    "react-scripts": "1.1.5",
+    "togeojson": "^0.16.0"
   },
   "devDependencies": {
-    "cssnano": "^4.1.4"
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-compat": "^2.2.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jest": "^21.7.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-react": "^7.7.0"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build&&rm -rf docs&&mv build docs",
+    "test": "react-app-rewired test --env=jsdom",
+    "eject": "react-scripts eject"
   }
 }

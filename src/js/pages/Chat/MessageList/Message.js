@@ -1,15 +1,17 @@
 import React from 'react';
-import { css } from 'react-emotion';
+import styled from 'react-emotion';
 
 const Message = ({ message: { senderId, text } }) => (
-  <div className={MessageStyle}>
+  <StyledMessage senderId={senderId}>
     <div>{senderId}</div>
     <div>{text}</div>
-  </div>
+  </StyledMessage>
 );
 
-const MessageStyle = css`
+const StyledMessage = styled('div')`
   margin: 15px 0;
+  // RTL for self posted messages
+  direction: ${({ senderId }) => senderId === 'perborgen' && 'rtl'};
   & div:nth-child(1) {
     font-size: 11px;
     color: var(--main-text-color);

@@ -23,18 +23,18 @@ class MessageList extends Component {
   render() {
     const { messages } = this.props;
     return (
-      <ul className={MessageListStyle} ref={div => this.messageList = div}>
+      <div className={MessageListStyle} ref={div => this.messageList = div}>
         {messages.map(message => (
           <Message key={message.id} message={message} />
         ))}
-      </ul>
+      </div>
     );
   }
 }
 
 const MessageListStyle = css`
   box-sizing: border-box;
-  padding: 0 0 0 6px;
+  padding: 0 6px 0 6px;
   margin: 0;
   width: 100%;
   height: 100%;

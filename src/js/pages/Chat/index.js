@@ -22,7 +22,7 @@ class Chat extends Component {
   async componentDidMount() {
     const chatManager = new Chatkit.ChatManager({
       instanceLocator,
-      userId: 'janedoe',
+      userId: username,
       tokenProvider: new Chatkit.TokenProvider({
         url: testToken,
       }),

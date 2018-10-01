@@ -17,8 +17,9 @@ class Chat extends Component {
   state = {
     messages: [],
   };
+  currentUser = null;
 
-  componentDidMount() {
+  async componentDidMount() {
     const chatManager = new Chatkit.ChatManager({
       instanceLocator,
       userId: 'janedoe',
@@ -27,20 +28,19 @@ class Chat extends Component {
       }),
     });
 
-    chatManager.connect()
-      .then(currentUser => {
-        this.currentUser = currentUser;
-        this.currentUser.subscribeToRoom({
-          roomId,
-          hooks: {
-            onNewMessage: message => {
-              this.setState({
-                messages: [...this.state.messages, message],
-              });
-            },
-          },
-        });
-      });
+    this.currentUser = await chatManager.connect();
+    this.currentUser.subscribeToRoom({
+      roomId,
+      hooks: {
+        onNewMessage: this.onNewMessage,
+      },
+    });
+  }
+
+  onNewMessage = (message) => {
+    this.setState({
+      messages: [...this.state.messages, message],
+    });
   }
 
   sendMessage = (text) => {

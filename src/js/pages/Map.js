@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { Page } from 'react-onsenui';
-import { Map, TileLayer, GeoJSON, Marker } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, Marker, Polyline } from 'react-leaflet';
 import toGeoJSON from 'togeojson';
-import Leaflet from 'leaflet';
+import L from 'leaflet';
 
 import Header from '../components/Header';
 
-const bitmojiIcon = new Leaflet.Icon({
+const bitmojiIcon = new L.Icon({
   iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',
   iconSize: [95, 95],
   iconAnchor: [50, 75],
@@ -81,6 +81,7 @@ class MapPage extends Component {
             />
             <Marker key="nearCDale" position={[lat, lng]} icon={bitmojiIcon} />
             <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
+            {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [lat, lng]]} />)})
           </Map>)}
       </Page>
     );

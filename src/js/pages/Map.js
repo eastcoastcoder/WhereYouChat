@@ -3,35 +3,47 @@ import { Page } from 'react-onsenui';
 import { Map, TileLayer, GeoJSON, Marker, Polyline } from 'react-leaflet';
 import toGeoJSON from 'togeojson';
 import L from 'leaflet';
+import libmoji from 'libmoji';
+import { geolocated } from 'react-geolocated';
 
 import Header from '../components/Header';
 
-const bitmojiIcon = new L.Icon({
-  iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',
-  iconSize: [95, 95],
-  iconAnchor: [50, 75],
-});
+const HEADER_HEIGHT = 44;
 
 class MapPage extends Component {
   renderToolbar = () => <Header title="Map" />;
 
   state = {
-    lat: 37.7220,
-    lng: -89.2043,
     zoom: 15,
     loaded: false,
     myGeoJSON: {},
+    bitmojiIcon: {},
     height: 0,
     width: 0,
   }
 
+  getCurrentBitmoji = () => {
+    const standingComicId = '10220709';
+    const myAvatarId = '128256895_1-s1';
+    const transparent = Number(true);
+    const scale = 1;
+    this.setState({
+      bitmojiIcon: new L.Icon({
+        iconUrl: libmoji.buildRenderUrl(standingComicId, myAvatarId, transparent, scale),
+        iconSize: [95, 95],
+        iconAnchor: [50, 75],
+      }),
+    });
+  }
+
   updateDimensions = () => {
-    this.setState({ width: window.innerWidth, height: window.innerHeight });
+    this.setState({ width: window.innerWidth, height: window.innerHeight - HEADER_HEIGHT });
   }
 
   async componentDidMount() {
     this.updateDimensions();
     window.addEventListener('resize', this.updateDimensions);
+    this.getCurrentBitmoji();
     await this.getKmlToGeoJSON();
   }
 
@@ -65,27 +77,35 @@ class MapPage extends Component {
   }
 
   render() {
-    const { loaded, myGeoJSON, lat, lng, zoom, height, width } = this.state;
+    const { loaded, myGeoJSON, zoom, height, width, bitmojiIcon } = this.state;
+    const { isGeolocationAvailable, isGeolocationEnabled, coords } = this.props;
     return (
       <Page renderToolbar={this.renderToolbar}>
         {!loaded
         ? 'Loading...'
-        : (
-          <Map
-            center={[lat, lng]}
-            zoom={zoom}
-            style={{ height, width }}
-          >
-            <TileLayer
-              url="https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ"
-            />
-            <Marker key="nearCDale" position={[lat, lng]} icon={bitmojiIcon} />
-            <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
-            {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [lat, lng]]} />)})
-          </Map>)}
+        : !isGeolocationAvailable || !isGeolocationEnabled
+          ? <div>Problem obtaining GPS coordinates</div>
+          : !coords
+            ? 'Loading...'
+            : (
+              <Map
+                center={[coords.latitude, coords.longitude]}
+                zoom={zoom}
+                style={{ height, width }}
+              >
+                <TileLayer url="https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ" />
+                <Marker key="myPosition" position={[coords.latitude, coords.longitude]} icon={bitmojiIcon} />
+                <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
+                {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [coords.latitude, coords.longitude]]} />)})
+              </Map>)}
       </Page>
     );
   }
 }
 
-export default MapPage;
+export default geolocated({
+  positionOptions: {
+    enableHighAccuracy: false,
+  },
+  userDecisionTimeout: 5000,
+})(MapPage);

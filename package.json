@@ -16,6 +16,7 @@
     "react-app-rewired": "^1.6.2",
     "react-dom": "^16.5.2",
     "react-emotion": "^9.2.6",
+    "react-geolocated": "^2.4.0",
     "react-hot-loader": "^4.3.11",
     "react-leaflet": "^2.0.1",
     "react-onsenui": "^1.11.1",

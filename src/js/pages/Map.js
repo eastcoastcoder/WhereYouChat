@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { Page } from 'react-onsenui';
-import { Map, TileLayer, GeoJSON, Marker, Polyline } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, Marker, Circle, Popup } from 'react-leaflet';
 import toGeoJSON from 'togeojson';
 import L from 'leaflet';
 import libmoji from 'libmoji';
 import { geolocated } from 'react-geolocated';
-
+import geocluster from 'geocluster';
 import Header from '../components/Header';
 
 const HEADER_HEIGHT = 44;
@@ -61,7 +61,8 @@ class MapPage extends Component {
     const text = await response.text();
     const myKml = (new window.DOMParser()).parseFromString(text, 'text/xml');
     const myGeoJSON = toGeoJSON.kml(myKml);
-    this.setState({ loaded: true, myGeoJSON });
+    const geoclusterCoords = geocluster(myGeoJSON.features.filter(feature => feature.properties.Country === 'USA').map(feature => feature.geometry.coordinates), 0.75);
+    this.setState({ loaded: true, myGeoJSON, geoclusterCoords });
   }
 
   onEachFeature = (feature, layer) => {
@@ -77,7 +78,7 @@ class MapPage extends Component {
   }
 
   render() {
-    const { loaded, myGeoJSON, zoom, height, width, bitmojiIcon } = this.state;
+    const { loaded, myGeoJSON, geoclusterCoords, zoom, height, width, bitmojiIcon } = this.state;
     const { isGeolocationAvailable, isGeolocationEnabled, coords } = this.props;
     return (
       <Page renderToolbar={this.renderToolbar}>
@@ -96,11 +97,25 @@ class MapPage extends Component {
                 <TileLayer url="https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ" />
                 <Marker key="myPosition" position={[coords.latitude, coords.longitude]} icon={bitmojiIcon} />
                 <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
-                {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [coords.latitude, coords.longitude]]} />)})
+                {/* {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [coords.latitude, coords.longitude]]} />)}) */}
+                {/* {myGeoJSON.features.filter(feature => feature.properties.Year === '2018').map(feature => <Circle center={lngLatToLatLng(feature.geometry.coordinates)} radius={5000} />)} */}
+                {geoclusterCoords.map((feature, index) => (
+                  <Circle popup="test" center={lngLatToLatLng(feature.centroid)} radius={500000} >
+                    <Popup>
+                      <span>
+                        Room #{String(index + 1).padStart(2, 0)} <br />
+                      </span>
+                    </Popup>
+                  </Circle>))}
+                {/* <Polygon positions={myGeoJSON.features.filter(feature => feature.properties.Year === '2015').map(feature => [feature.geometry.coordinates[1], feature.geometry.coordinates[0]])} color="red" /> */}
               </Map>)}
       </Page>
     );
   }
+}
+
+function lngLatToLatLng(arr) {
+  return [arr[1], arr[0]];
 }
 
 export default geolocated({

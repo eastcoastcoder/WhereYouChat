@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ons from 'onsenui';
 import { Page } from 'react-onsenui';
 import { Map, TileLayer, GeoJSON, Marker, Circle, Popup } from 'react-leaflet';
 import toGeoJSON from 'togeojson';
@@ -16,20 +17,21 @@ class MapPage extends Component {
   state = {
     zoom: 15,
     loaded: false,
+    chatRoomID: -1,
     myGeoJSON: {},
     bitmojiIcon: {},
+    userBitmojiID: '128256895_1-s1',
     height: 0,
     width: 0,
   }
 
   getCurrentBitmoji = () => {
     const standingComicId = '10220709';
-    const myAvatarId = '128256895_1-s1';
     const transparent = Number(true);
     const scale = 1;
     this.setState({
       bitmojiIcon: new L.Icon({
-        iconUrl: libmoji.buildRenderUrl(standingComicId, myAvatarId, transparent, scale),
+        iconUrl: libmoji.buildRenderUrl(standingComicId, this.state.userBitmojiID, transparent, scale),
         iconSize: [95, 95],
         iconAnchor: [50, 75],
       }),
@@ -68,11 +70,8 @@ class MapPage extends Component {
   onEachFeature = (feature, layer) => {
     if (feature.properties && feature.properties.Notes) {
       let myPopup = '';
-      myPopup += feature.properties.City ? `City: ${feature.properties.City}<br />` : '';
-      myPopup += feature.properties.Month ? `Month: ${feature.properties.Month}<br />` : '';
-      myPopup += feature.properties.Year ? `Year: ${feature.properties.Year}<br />` : '';
+      myPopup += feature.properties.CityState ? `City: ${feature.properties.CityState}<br />` : '';
       myPopup += feature.properties.Country ? `Country: ${feature.properties.Country}<br />` : '';
-      myPopup += feature.properties.Notes ? `Notes: ${feature.properties.Notes}` : '';
       layer.bindPopup(myPopup);
     }
   }
@@ -95,18 +94,38 @@ class MapPage extends Component {
                 style={{ height, width }}
               >
                 <TileLayer url="https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ" />
-                <Marker key="myPosition" position={[coords.latitude, coords.longitude]} icon={bitmojiIcon} />
+                <Marker key="myPosition" position={[coords.latitude, coords.longitude]} icon={bitmojiIcon} >
+                  <Popup offset={[0, -50]}>
+                    <span>
+                        You Are Here
+                    </span>
+                    <center>
+                      <button onClick={async () => {
+                        const userBitmojiID = await ons.notification.prompt('Please enter your bitmoji ID<br />EX: 316830037_35-s5');
+                        this.setState({ userBitmojiID }, () => this.getCurrentBitmoji());
+                      }}
+                      >CHANGE BITMOJI
+                      </button>
+                    </center>
+                  </Popup>
+                </Marker>
                 <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
                 {/* {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [coords.latitude, coords.longitude]]} />)}) */}
                 {/* {myGeoJSON.features.filter(feature => feature.properties.Year === '2018').map(feature => <Circle center={lngLatToLatLng(feature.geometry.coordinates)} radius={5000} />)} */}
-                {geoclusterCoords.map((feature, index) => (
-                  <Circle popup="test" center={lngLatToLatLng(feature.centroid)} radius={500000} >
-                    <Popup>
-                      <span>
-                        Room #{String(index + 1).padStart(2, 0)} <br />
-                      </span>
-                    </Popup>
-                  </Circle>))}
+                {geoclusterCoords.map((feature, index) => {
+                  const chatRoomID = String(index + 1).padStart(3, 0);
+                  return (
+                    <Circle popup="test" center={lngLatToLatLng(feature.centroid)} radius={500000} >
+                      <Popup>
+                        <span>
+                        Room #{chatRoomID} <br />
+                        </span>
+                        <center>
+                          <button onClick={() => this.setState({ chatRoomID })}>ENTER THIS ROOM</button>
+                        </center>
+                      </Popup>
+                    </Circle>);
+                })}
                 {/* <Polygon positions={myGeoJSON.features.filter(feature => feature.properties.Year === '2015').map(feature => [feature.geometry.coordinates[1], feature.geometry.coordinates[0]])} color="red" /> */}
               </Map>)}
       </Page>

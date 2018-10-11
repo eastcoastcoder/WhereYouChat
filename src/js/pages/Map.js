@@ -6,7 +6,6 @@ import toGeoJSON from 'togeojson';
 import L from 'leaflet';
 import libmoji from 'libmoji';
 import { geolocated } from 'react-geolocated';
-import geocluster from 'geocluster';
 import Header from '../components/Header';
 
 const HEADER_HEIGHT = 44;
@@ -63,8 +62,7 @@ class MapPage extends Component {
     const text = await response.text();
     const myKml = (new window.DOMParser()).parseFromString(text, 'text/xml');
     const myGeoJSON = toGeoJSON.kml(myKml);
-    const geoclusterCoords = geocluster(myGeoJSON.features.filter(feature => feature.properties.Country === 'USA').map(feature => feature.geometry.coordinates), 0.75);
-    this.setState({ loaded: true, myGeoJSON, geoclusterCoords });
+    this.setState({ loaded: true, myGeoJSON });
   }
 
   onEachFeature = (feature, layer) => {
@@ -77,7 +75,7 @@ class MapPage extends Component {
   }
 
   render() {
-    const { loaded, myGeoJSON, geoclusterCoords, zoom, height, width, bitmojiIcon } = this.state;
+    const { loaded, myGeoJSON, zoom, height, width, bitmojiIcon } = this.state;
     const { isGeolocationAvailable, isGeolocationEnabled, coords } = this.props;
     return (
       <Page renderToolbar={this.renderToolbar}>
@@ -110,9 +108,7 @@ class MapPage extends Component {
                   </Popup>
                 </Marker>
                 <GeoJSON key="my-geojson" data={myGeoJSON} onEachFeature={this.onEachFeature} />
-                {/* {myGeoJSON.features.map(feature => <Polyline positions={[[feature.geometry.coordinates[1], feature.geometry.coordinates[0]], [coords.latitude, coords.longitude]]} />)}) */}
-                {/* {myGeoJSON.features.filter(feature => feature.properties.Year === '2018').map(feature => <Circle center={lngLatToLatLng(feature.geometry.coordinates)} radius={5000} />)} */}
-                {geoclusterCoords.map((feature, index) => {
+                {/* {geoclusterCoords.map((feature, index) => {
                   const chatRoomID = String(index + 1).padStart(3, 0);
                   return (
                     <Circle popup="test" center={lngLatToLatLng(feature.centroid)} radius={500000} >
@@ -125,8 +121,7 @@ class MapPage extends Component {
                         </center>
                       </Popup>
                     </Circle>);
-                })}
-                {/* <Polygon positions={myGeoJSON.features.filter(feature => feature.properties.Year === '2015').map(feature => [feature.geometry.coordinates[1], feature.geometry.coordinates[0]])} color="red" /> */}
+                })} */}
               </Map>)}
       </Page>
     );

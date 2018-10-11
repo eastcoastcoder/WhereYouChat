@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import ons from 'onsenui';
 import { Page } from 'react-onsenui';
-import { Map, TileLayer, GeoJSON, Marker, Circle, Popup } from 'react-leaflet';
-import toGeoJSON from 'togeojson';
+import { Map, TileLayer, GeoJSON, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import libmoji from 'libmoji';
 import { geolocated } from 'react-geolocated';
+
+import dummyData from '../../resources/dummyData';
 import Header from '../components/Header';
 
 const HEADER_HEIGHT = 44;
@@ -45,24 +46,17 @@ class MapPage extends Component {
     this.updateDimensions();
     window.addEventListener('resize', this.updateDimensions);
     this.getCurrentBitmoji();
-    await this.getKmlToGeoJSON();
+    await this.getUsersLocations();
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateDimensions);
   }
 
-  getKmlToGeoJSON = async () => {
+  getUsersLocations = async () => {
     this.setState({ loaded: false });
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-    const resourceUrl = 'https://batchgeo.com/map/kml/ethanx94';
-    const response = await fetch(`${proxyUrl}${resourceUrl}`, {
-      method: 'GET',
-    });
-    const text = await response.text();
-    const myKml = (new window.DOMParser()).parseFromString(text, 'text/xml');
-    const myGeoJSON = toGeoJSON.kml(myKml);
-    this.setState({ loaded: true, myGeoJSON });
+    // Do any requests here, use dummyData for now
+    this.setState({ loaded: true, myGeoJSON: dummyData });
   }
 
   onEachFeature = (feature, layer) => {

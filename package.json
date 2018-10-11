@@ -20,9 +20,7 @@
     "react-hot-loader": "^4.3.11",
     "react-leaflet": "^2.0.1",
     "react-onsenui": "^1.11.1",
-    "react-scripts": "1.1.5",
-    "replace": "^1.0.0",
-    "togeojson": "^0.16.0"
+    "react-scripts": "1.1.5"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

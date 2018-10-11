@@ -1,17 +1,17 @@
 import React from 'react';
 import styled from 'react-emotion';
 
-const Message = ({ message: { senderId, text } }) => (
-  <StyledMessage senderId={senderId}>
-    <div>{senderId}</div>
-    <div>{text}</div>
+const Message = ({ message: { _sender: { nickname }, message } }) => (
+  <StyledMessage senderId={nickname}>
+    <div>{nickname}</div>
+    <div>{message}</div>
   </StyledMessage>
 );
 
 const StyledMessage = styled('div')`
   margin: 15px 0;
   // RTL for self posted messages
-  direction: ${({ senderId }) => senderId === 'perborgen' && 'rtl'};
+  direction: ${({ senderId }) => senderId === 'ethanx94' && 'rtl'};
   & div:nth-child(1) {
     font-size: 11px;
     color: var(--main-text-color);

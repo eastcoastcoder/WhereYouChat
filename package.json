@@ -4,11 +4,9 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
-    "@pusher/chatkit": "^0.7.17",
     "emotion": "^9.2.6",
     "emotion-server": "^9.2.6",
     "emotion-theming": "^9.2.6",
-    "geocluster": "^0.1.1",
     "leaflet": "^1.3.4",
     "libmoji": "^2.3.0",
     "onsenui": "^2.10.1",
@@ -23,6 +21,7 @@
     "react-onsenui": "^1.11.1",
     "react-scripts": "1.1.5",
     "replace": "^1.0.0",
+    "sendbird": "^3.0.81",
     "togeojson": "^0.16.0"
   },
   "devDependencies": {
@@ -37,7 +36,6 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "postinstall": "node postinstall",
     "build": "react-app-rewired build&&rm -rf docs&&mv build docs",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"

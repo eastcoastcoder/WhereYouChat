@@ -78,6 +78,7 @@ const getPopupContent = function(layer) {
 var clustered = turf.clustersKmeans(dummyData, { numberOfClusters: 7 });
 
 const clusterArr = [];
+let clusterObj = {};
 
 // resources/dummyData.js
 L.geoJSON(clustered, {
@@ -85,14 +86,41 @@ L.geoJSON(clustered, {
         let myPopup = '';
         myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
         myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
-        myPopup += layer.feature.properties.cluster ? `Cluster: ${layer.feature.properties.cluster}<br />` : '';
-        if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
+        myPopup += layer.feature.properties.cluster ? `Room #${layer.feature.properties.cluster}<br />` : '';
+        // if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
+        clusterArr.push(layer.feature.properties.centroid);
         layer.bindPopup(myPopup);
     }
 }).addTo(map);
 
-for (const cluster of clusterArr) {
-    L.circle([cluster[1], cluster[0]], 500000).addTo(map);
+clusterObjArr = clusterArr.reduce((b,c)=>((b[b.findIndex(d=>d.el===c)]||b[b.push({el:c,count:0})-1]).count++,b),[]);
+
+for (const { el, count } of clusterObjArr) {
+    let radius;
+    // Refactor to ranges eventually
+    switch (count) {
+        case 6:
+        radius = 250000;
+        break;
+        case 5:
+        radius = 300000;
+        break;
+        case 4:
+        radius = 350000;
+        break;
+        case 3:
+        radius = 400000;
+        break;
+        case 2:
+        radius = 450000;
+        break;
+        case 1:
+        radius = 500000;
+        break;
+        default:
+        break;
+    }
+    L.circle([el[1], el[0]], radius).addTo(map).bindPopup(`${count} Users Within This Area`).openPopup();
 }
 
 var bitmojiIcon = L.icon({

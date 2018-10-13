@@ -75,16 +75,25 @@ const getPopupContent = function(layer) {
     return null;
 };
 
-function onEachFeature(feature, layer) {
-    let myPopup = '';
-    myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
-    myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
-    layer.bindPopup(myPopup);
-}
+var clustered = turf.clustersKmeans(dummyData, { numberOfClusters: 7 });
+
+const clusterArr = [];
+
 // resources/dummyData.js
-L.geoJSON(dummyData, {
-    onEachFeature: onEachFeature
+L.geoJSON(clustered, {
+    onEachFeature: (feature, layer) => {
+        let myPopup = '';
+        myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
+        myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
+        myPopup += layer.feature.properties.cluster ? `Cluster: ${layer.feature.properties.cluster}<br />` : '';
+        if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
+        layer.bindPopup(myPopup);
+    }
 }).addTo(map);
+
+for (const cluster of clusterArr) {
+    L.circle([cluster[1], cluster[0]], 500000).addTo(map);
+}
 
 var bitmojiIcon = L.icon({
     iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',
@@ -92,7 +101,7 @@ var bitmojiIcon = L.icon({
     iconAnchor:   [50, 75],
 });
 
-L.marker(nearCDale, {icon: bitmojiIcon}).addTo(map);
+L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
 
 // Object created - bind popup to layer, add to feature group
 map.on(L.Draw.Event.CREATED, function(event) {

@@ -75,19 +75,16 @@ const getPopupContent = function(layer) {
     return null;
 };
 
-const places = omnivore.kml('https://cors-anywhere.herokuapp.com/https://batchgeo.com/map/kml/ethanx94')
-  .on('ready', function() {
-      places.eachLayer(function(layer) {
-          let myPopup = '';
-          myPopup += layer.feature.properties.City ? `City: ${layer.feature.properties.City}<br />` : '';
-          myPopup += layer.feature.properties.Month ? `Month: ${layer.feature.properties.Month}<br />` : '';
-          myPopup += layer.feature.properties.Year ? `Year: ${layer.feature.properties.Year}<br />` : '';
-          myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
-          myPopup += layer.feature.properties.Notes ? `Notes: ${layer.feature.properties.Notes}` : '';
-          layer.bindPopup(myPopup);
-      });
-  })
-  .addTo(map);
+function onEachFeature(feature, layer) {
+    let myPopup = '';
+    myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
+    myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
+    layer.bindPopup(myPopup);
+}
+// resources/dummyData.js
+L.geoJSON(dummyData, {
+    onEachFeature: onEachFeature
+}).addTo(map);
 
 var bitmojiIcon = L.icon({
     iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',

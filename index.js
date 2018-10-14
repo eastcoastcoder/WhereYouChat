@@ -8,6 +8,16 @@ const nearCDale = new L.LatLng(37.7220, -89.2043);
 const map = new L.Map('map', {center: nearCDale, zoom: 15});
 const drawnItems = L.featureGroup().addTo(map);
 
+var bitmojiIcon = L.icon({
+  iconUrl: 'https://images.bitmoji.com/render/panel/10220709-128256895_1-s1-v1.png?transparent=1',
+  iconSize:     [95, 95],
+  iconAnchor:   [50, 75],
+});
+
+const defaultPosition = L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
+
+const validRandomBitmojiIdArr = [];
+
 L.control.layers({
     "snapchat": snapchat.addTo(map),
     "fakeSnapchat": fakeSnapchat,
@@ -77,59 +87,84 @@ const getPopupContent = function(layer) {
 
 var clustered = turf.clustersKmeans(dummyData, { numberOfClusters: 7 });
 
-const clusterArr = [];
-let clusterObj = {};
-
-// resources/dummyData.js
-L.geoJSON(clustered, {
-    onEachFeature: (feature, layer) => {
-        let myPopup = '';
-        myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
-        myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
-        myPopup += layer.feature.properties.cluster ? `Room #${layer.feature.properties.cluster}<br />` : '';
-        // if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
-        clusterArr.push(layer.feature.properties.centroid);
-        layer.bindPopup(myPopup);
+const startId = 270452360;
+async function populateRandomBitmoji() {
+  while (validRandomBitmojiIdArr.length < clustered.features.length) {
+    const randomNum = Math.floor(Math.random() * 1000) + 1;
+    const bitmojiId = (startId - randomNum);
+    const url = 'https://images.bitmoji.com/render/panel/10220709-' + bitmojiId + '_2-s1-v1.png?transparent=1';
+    const response = await fetch(url);
+    if (response.status == 200) {
+      validRandomBitmojiIdArr.push(bitmojiId);
+    } else {
+      await populateRandomBitmoji();
     }
-}).addTo(map);
-
-clusterObjArr = clusterArr.reduce((b,c)=>((b[b.findIndex(d=>d.el===c)]||b[b.push({el:c,count:0})-1]).count++,b),[]);
-
-for (const { el, count } of clusterObjArr) {
-    let radius;
-    // Refactor to ranges eventually
-    switch (count) {
-        case 6:
-        radius = 250000;
-        break;
-        case 5:
-        radius = 300000;
-        break;
-        case 4:
-        radius = 350000;
-        break;
-        case 3:
-        radius = 400000;
-        break;
-        case 2:
-        radius = 450000;
-        break;
-        case 1:
-        radius = 500000;
-        break;
-        default:
-        break;
-    }
-    L.circle([el[1], el[0]], radius).addTo(map).bindPopup(`${count} Users Within This Area`).openPopup();
+  }
 }
 
-var bitmojiIcon = L.icon({
-    iconUrl: 'https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.png?transparent=1',
-    iconSize:     [95, 95],
-    iconAnchor:   [50, 75],
+const clusterArr = [];
+let clusterObj = {};
+// resources/dummyData.js
+populateRandomBitmoji().then(() => {
+  let index = 0;
+  L.geoJSON(clustered, {
+      onEachFeature: (feature, layer) => {
+          let myPopup = '';
+          myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
+          myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
+          myPopup += layer.feature.properties.cluster ? `Room #${layer.feature.properties.cluster}<br />` : '';
+          // if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
+          clusterArr.push(layer.feature.properties.centroid);
+          layer.bindPopup(myPopup);
+      },
+      pointToLayer: (_, latlng) => {
+        return L.marker(latlng, {
+          icon: L.icon({
+            iconUrl: 'https://images.bitmoji.com/render/panel/10220709-' + validRandomBitmojiIdArr[index++] + '_2-s1-v1.png?transparent=1',
+            iconSize:     [95, 95],
+            iconAnchor:   [50, 75],
+          })
+        });
+      }
+  }).addTo(map);
+
+  // Populates an unique array of objects with counts for duplicate centroids from original array
+  // If any given points have the same centroid, they are within the same cluster
+  clusterObjArr = clusterArr.reduce((b,c)=>((b[b.findIndex(d=>d.el===c)]||b[b.push({el:c,count:0})-1]).count++,b),[]);
+  drawClusterCirlces();
 });
 
-L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
+// Draws cirlces with radi corresponding to count values of each cluster
+// Ideally, instead of hardcoding radi, we need a bbox which contains all points within the cluster
+function drawClusterCirlces() {
+  for (const { el, count } of clusterObjArr) {
+      let radius;
+      // Refactor to ranges eventually
+      switch (count) {
+          case 6:
+          radius = 250000;
+          break;
+          case 5:
+          radius = 300000;
+          break;
+          case 4:
+          radius = 350000;
+          break;
+          case 3:
+          radius = 400000;
+          break;
+          case 2:
+          radius = 450000;
+          break;
+          case 1:
+          radius = 500000;
+          break;
+          default:
+          break;
+      }
+      L.circle([el[1], el[0]], radius).addTo(map).bindPopup(`${count} Users Within This Area`);
+  }
+}
 
 // Object created - bind popup to layer, add to feature group
 map.on(L.Draw.Event.CREATED, function(event) {
@@ -165,7 +200,8 @@ function jumpToLocation(map) {
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
-    L.marker([latitude, longitude]).addTo(map);
+    defaultPosition.remove();
+    L.marker([latitude, longitude], { icon: bitmojiIcon }).addTo(map);
     L.circle([latitude, longitude], accuracyRadius).addTo(map);
     map.setView([latitude, longitude], zoom);
   }

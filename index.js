@@ -14,6 +14,7 @@ var bitmojiIcon = L.icon({
   iconUrl: 'https://images.bitmoji.com/render/panel/10220709-128256895_1-s1-v1.png?transparent=1',
   iconSize:     [95, 95],
   iconAnchor:   [50, 90],
+  popupAnchor:  [0, -75]
 });
 
 const defaultPosition = L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
@@ -87,7 +88,7 @@ const getPopupContent = function(layer) {
   return null;
 };
 
-var clustered = turf.clustersKmeans(dummyData, { numberOfClusters: 7 });
+const clustered = turf.clustersKmeans(dummyData, { numberOfClusters: dummyData.features.length/4 });
 
 const startId = 270452360;
 async function populateRandomBitmoji() {
@@ -104,8 +105,6 @@ async function populateRandomBitmoji() {
   }
 }
 
-const clusterArr = [];
-// resources/dummyData.js
 populateRandomBitmoji().then(() => {
   let index = 0;
   L.geoJSON(clustered, {
@@ -113,9 +112,7 @@ populateRandomBitmoji().then(() => {
       let myPopup = '';
       myPopup += layer.feature.properties.CityState ? `City: ${layer.feature.properties.CityState}<br />` : '';
       myPopup += layer.feature.properties.Country ? `Country: ${layer.feature.properties.Country}<br />` : '';
-      myPopup += layer.feature.properties.cluster ? `Room #${layer.feature.properties.cluster}<br />` : '';
-      // if (!(clusterArr.includes(layer.feature.properties.centroid))) clusterArr.push(layer.feature.properties.centroid);
-      clusterArr.push(layer.feature.properties.centroid);
+      myPopup += typeof layer.feature.properties.cluster === 'number' ? `Room #${layer.feature.properties.cluster}<br />` : '';
       layer.bindPopup(myPopup);
     },
     pointToLayer: (_, latlng) => {
@@ -124,6 +121,7 @@ populateRandomBitmoji().then(() => {
           iconUrl: 'https://images.bitmoji.com/render/panel/10220709-' + validRandomBitmojiIdArr[index++] + '_2-s1-v1.png?transparent=1',
           iconSize:     [95, 95],
           iconAnchor:   [50, 90],
+          popupAnchor:  [0, -75]
         })
       });
     }
@@ -142,16 +140,15 @@ function drawClusterBbox(clusteredByGroup) {
   for (let i = 0; i < clusteredByGroup.length; i++) {
     const bbox = turf.bbox(clusteredByGroup[i]);
     const bboxPolygon = turf.bboxPolygon(bbox);
-    const bboxRectangle = bboxPolygon.geometry.coordinates[0].map(d => [d[1], d[0]]);
     const midpoint = turf.center(bboxPolygon).geometry.coordinates;
-    clusteredByGroup[i].minRadius = turf.length(turf.lineString([midpoint, [bboxRectangle[0][1], bboxRectangle[0][0]]]), { units: 'meters' });
+    clusteredByGroup[i].minRadius = turf.length(turf.lineString([midpoint, bboxPolygon.geometry.coordinates[0][0]]), { units: 'meters' });
     clusteredByGroup[i].midpoint = [midpoint[1], midpoint[0]];
     if (__DEV__) {
       drawnItems.addLayer(
-        L.rectangle(bboxRectangle, { color: '#ff7800', weight: 1 })
+        new L.GeoJSON(bboxPolygon)
       );
       drawnItems.addLayer(
-        L.polyline([bboxRectangle[0], [midpoint[1], midpoint[0]]], { color: '#ff0000' })
+        new L.GeoJSON(turf.lineString([midpoint, bboxPolygon.geometry.coordinates[0][0]]))
       );
     }
   }
@@ -223,13 +220,11 @@ function jumpToLocation(map) {
   } 
   function success(position) {
     var zoom = 16;
-    var accuracyRadius = 500; // Hardcoded
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
     defaultPosition.remove();
-    L.marker([latitude, longitude], { icon: bitmojiIcon }).addTo(map);
-    L.circle([latitude, longitude], accuracyRadius).addTo(map);
+    L.marker([latitude, longitude], { icon: bitmojiIcon }).bindPopup('You are here').addTo(map);
     map.setView([latitude, longitude], zoom);
   }
   function error() {

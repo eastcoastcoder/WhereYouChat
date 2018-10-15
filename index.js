@@ -18,7 +18,7 @@ var bitmojiIcon = L.icon({
 });
 
 const defaultPosition = L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
-
+let myLocation = [nearCDale.lng, nearCDale.lat];
 const validRandomBitmojiIdArr = [];
 
 L.control.layers({
@@ -142,7 +142,7 @@ function drawClusterBbox(clusteredByGroup) {
     const bboxPolygon = turf.bboxPolygon(bbox);
     const midpoint = turf.center(bboxPolygon).geometry.coordinates;
     clusteredByGroup[i].minRadius = turf.length(turf.lineString([midpoint, bboxPolygon.geometry.coordinates[0][0]]), { units: 'meters' });
-    clusteredByGroup[i].midpoint = [midpoint[1], midpoint[0]];
+    clusteredByGroup[i].midpoint = midpoint;
     if (__DEV__) {
       drawnItems.addLayer(
         new L.GeoJSON(bboxPolygon)
@@ -155,7 +155,8 @@ function drawClusterBbox(clusteredByGroup) {
 }
 
 function drawClusterCirlces(clusteredByGroup) {
-  for (const { features, minRadius, midpoint } of clusteredByGroup) {
+  for (const cluster of clusteredByGroup) {
+    const { features, minRadius, midpoint } = cluster;
     let potentialRadius;
     switch (features.length) {
     case 6:
@@ -180,12 +181,16 @@ function drawClusterCirlces(clusteredByGroup) {
       break;
     }
     const targetRadius = (minRadius < potentialRadius) ? potentialRadius : minRadius;
+    const curCircle = turf.circle(midpoint, targetRadius, { units: 'meters' });
+    const curLocation = turf.point(myLocation);
+    const ptsWithin = turf.booleanPointInPolygon(curLocation, curCircle);
     drawnItems.addLayer(
-      L.circle(midpoint, targetRadius).bindPopup(`
-          Room #${features[0].properties.cluster}<br />
-          Radius: ${(targetRadius/1000).toFixed(2)} Km<br />
-          ${features.length} Users Within This Area`)
-    );
+      new L.GeoJSON(curCircle).bindPopup(`
+        Room #${features[0].properties.cluster}<br />
+        Radius: ${(targetRadius/1000).toFixed(2)} Km<br />
+        ${features.length} Users Within This Area<br />
+        ${ptsWithin ? 'JOIN THIS ROOM' : 'YOU ARE OUT OF RANGE'}
+    `));
   }
   // TODO: If N is substantially small (Such as only two markers on the map), extend the bbox to contain more than a single cluster
 }
@@ -222,6 +227,7 @@ function jumpToLocation(map) {
     var zoom = 16;
     var latitude  = position.coords.latitude;
     var longitude = position.coords.longitude;
+    myLocation = [longitude, latitude];
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
     defaultPosition.remove();
     L.marker([latitude, longitude], { icon: bitmojiIcon }).bindPopup('You are here').addTo(map);

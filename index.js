@@ -11,7 +11,7 @@ const drawnItems = L.featureGroup().addTo(map);
 var bitmojiIcon = L.icon({
   iconUrl: 'https://images.bitmoji.com/render/panel/10220709-128256895_1-s1-v1.png?transparent=1',
   iconSize:     [95, 95],
-  iconAnchor:   [50, 75],
+  iconAnchor:   [50, 90],
 });
 
 const defaultPosition = L.marker(nearCDale, { icon: bitmojiIcon }).addTo(map);
@@ -122,24 +122,52 @@ populateRandomBitmoji().then(() => {
           icon: L.icon({
             iconUrl: 'https://images.bitmoji.com/render/panel/10220709-' + validRandomBitmojiIdArr[index++] + '_2-s1-v1.png?transparent=1',
             iconSize:     [95, 95],
-            iconAnchor:   [50, 75],
+            iconAnchor:   [50, 90],
           })
         });
       }
   }).addTo(map);
 
+  const clusteredByGroup = [];
+  for (const cluster of clustered.features) {
+    if (!clusteredByGroup[cluster.properties.cluster]) clusteredByGroup[cluster.properties.cluster] = { type: 'FeatureCollection', features: [] };
+    clusteredByGroup[cluster.properties.cluster].features.push(cluster);
+  }
+  drawClusterBbox(clusteredByGroup);
   // Populates an unique array of objects with counts for duplicate centroids from original array
   // If any given points have the same centroid, they are within the same cluster
   clusterObjArr = clusterArr.reduce((b,c)=>((b[b.findIndex(d=>d.el===c)]||b[b.push({el:c,count:0})-1]).count++,b),[]);
   drawClusterCirlces();
 });
 
+// Use the half the bbox diagonal measurement as the minimum radius of each cluster circle
+const diagonalArr = [];
+function drawClusterBbox(clusteredByGroup) {
+  for (const collection of clusteredByGroup) {
+    const bbox = turf.bbox(collection);
+    const bboxPolygon = turf.bboxPolygon(bbox);
+    const bboxRectangle = bboxPolygon.geometry.coordinates[0].map(d => [d[1], d[0]]);
+    diagonalArr.push([bboxRectangle[1], bboxRectangle[3]]);
+    L.rectangle(bboxRectangle, { color: "#ff7800", weight: 1 }).addTo(map);
+  }
+  for (const line of diagonalArr) {
+    const turfLine = line.map(d => [d[1], d[0]]);
+    const midpoint = turf.midpoint(turfLine[1], turfLine[0]).geometry.coordinates;
+    L.polyline([line[0], [midpoint[1], midpoint[0]]], { color: '#ff0000' }).addTo(map)
+    const distance = turf.distance(turfLine[1], turfLine[0], { units: 'meters' });
+    const radius = distance/2;
+    console.log('TURF Distance: ' + distance);
+    console.log('TURF Radius: ' + radius);
+  }
+}
+
 // Draws cirlces with radi corresponding to count values of each cluster
-// Ideally, instead of hardcoding radi, we need a bbox which contains all points within the cluster
+// Use bbox values to maintain a minimum radi for each cluster circle
 function drawClusterCirlces() {
+  // TODO: If N is substantially small (Such as only two markers on the map), extend the bbox to contain more than a single cluster
   for (const { el, count } of clusterObjArr) {
       let radius;
-      // Refactor to ranges eventually
+      // TODO: Refactor to ranges
       switch (count) {
           case 6:
           radius = 250000;

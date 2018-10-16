@@ -186,10 +186,12 @@ function drawClusterCirlces(clusteredByGroup) {
     const ptsWithin = turf.booleanPointInPolygon(curLocation, curCircle);
     drawnItems.addLayer(
       new L.GeoJSON(curCircle).bindPopup(`
+      <center>
         Room #${features[0].properties.cluster}<br />
         Radius: ${(targetRadius/1000).toFixed(2)} Km<br />
         ${features.length} Users Within This Area<br />
-        ${ptsWithin ? 'JOIN THIS ROOM' : 'YOU ARE OUT OF RANGE'}
+        <button type="button"${ptsWithin ? `onclick="joinRoom(${features[0].properties.cluster})">JOIN THIS ROOM` : 'disabled>YOU ARE OUT OF RANGE'}</button>
+      </center>
     `));
   }
   // TODO: If N is substantially small (Such as only two markers on the map), extend the bbox to contain more than a single cluster
@@ -230,7 +232,13 @@ function jumpToLocation(map) {
     myLocation = [longitude, latitude];
     locationLabel.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
     defaultPosition.remove();
-    L.marker([latitude, longitude], { icon: bitmojiIcon }).bindPopup('You are here').addTo(map);
+    L.marker([latitude, longitude], { icon: bitmojiIcon }).bindPopup(`
+    <center>
+      You Are Here<br />
+      <button type="button" onclick="changeNick()">Change Nickname</button><br />
+      <button type="button" onclick="changeBit()">Change Bitmoji</button>
+    </center>
+    `).addTo(map);
     map.setView([latitude, longitude], zoom);
   }
   function error() {
@@ -239,4 +247,16 @@ function jumpToLocation(map) {
   locationLabel.innerHTML = '<p>Locating…</p>';
   
   return navigator.geolocation.getCurrentPosition(success, error);
+}
+
+function joinRoom(roomNum) {
+  console.log(`Joining room ${roomNum}...`);
+}
+
+function changeNick() {
+  console.log('Please Enter A Nickname');
+}
+
+function changeBit() {
+  console.log('Please Enter A BitmojiId');
 }

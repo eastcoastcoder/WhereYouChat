@@ -9,14 +9,14 @@ class Main extends React.Component {
   renderTabs = () => {
     const sections = [
       {
-        content: <Chat key="Chat" navigator={this.props.navigator} />,
-        title: 'Chat',
-        icon: 'md-info',
-      },
-      {
         content: <Map key="Map" navigator={this.props.navigator} />,
         title: 'Map',
         icon: 'md-map',
+      },
+      {
+        content: <Chat key="Chat" navigator={this.props.navigator} />,
+        title: 'Chat',
+        icon: 'md-info',
       },
       {
         content: <Settings key="Settings" navigator={this.props.navigator} />,

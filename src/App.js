@@ -4,8 +4,8 @@ import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-// import libmoji from 'libmoji';
 
+import GlobalProvider from './js/contexts/GlobalProvider';
 import Main from './js/pages/Main';
 import './css/main.css';
 import './css/normalize.min.css';
@@ -26,25 +26,16 @@ export default class App extends React.Component {
   }
 
   render() {
-    /*
-    Bitmoji scratch
-    190872076_3-s1
-    console.log(libmoji.getAvatarId('https://render.bitstrips.com/v2/cpanel/8968038-190872076_3-s1-v1.png?transparent=1&palette=1'));
-    const comicId = libmoji.getComicId(libmoji.randTemplate(libmoji.templates));
-    const avatarId = '190872076_3-s1';
-    const outfit = libmoji.randOutfit(libmoji.getOutfits(libmoji.randBrand(libmoji.getBrands('male'))));
-
-    // https://images.bitmoji.com/render/panel/10220709-190872076_3-s1-v1.webp?transparent=1
-    console.log(libmoji.buildRenderUrl(comicId, avatarId, 1, 2, outfit));
-    */
     return (
-      <Navigator
-        initialRoute={{
+      <GlobalProvider>
+        <Navigator
+          initialRoute={{
           component: Main,
           props: { key: 'main' },
         }}
-        renderPage={this.renderPage}
-      />
+          renderPage={this.renderPage}
+        />
+      </GlobalProvider>
     );
   }
 }

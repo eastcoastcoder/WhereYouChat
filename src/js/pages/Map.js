@@ -19,6 +19,7 @@ import { geolocated } from 'react-geolocated';
 
 import dummyData from '../../resources/dummyData';
 import Header from '../components/Header';
+import withGlobalState from '../contexts/withGlobalState';
 
 const NEAR_CDALE = [-89.2043, 37.7220];
 const HEADER_HEIGHT = 44;
@@ -70,9 +71,11 @@ class MapPage extends Component {
     this.getCurrentBitmoji();
   }
 
-  msgHandler = ({ data }) => {
+  msgHandler = (message) => {
     let args = [];
-    const [func, remainingStr] = data.split('(');
+    let func;
+    let remainingStr;
+    if (typeof message.data === 'string') [func, remainingStr] = message.data.split('(');
     if (remainingStr) args = remainingStr.slice(0, -1).split(',');
     if (EXTERNAL_FUNCS.includes(func)) {
       this[func](...args);
@@ -81,6 +84,7 @@ class MapPage extends Component {
 
   joinRoom = (idx) => {
     console.log(`JOINING ${idx}`);
+    this.props.updateState('currentRoom', idx);
   }
 
   drawClusters = () => {
@@ -261,4 +265,4 @@ export default geolocated({
     enableHighAccuracy: false,
   },
   userDecisionTimeout: 5000,
-})(MapPage);
+})(withGlobalState(MapPage));

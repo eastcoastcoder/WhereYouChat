@@ -4,7 +4,7 @@ import GlobalContext from './GlobalContext';
 
 export default class GlobalProvider extends Component {
   state = {
-    currentRoom: -1,
+    currentRoom: 9806194,
   }
   updateState = (prop, value) => {
     this.setState({ [prop]: value });

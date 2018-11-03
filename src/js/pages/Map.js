@@ -82,9 +82,9 @@ class MapPage extends Component {
     }
   }
 
-  joinRoom = (idx) => {
-    console.log(`JOINING ${idx}`);
-    this.props.updateState('currentRoom', idx);
+  joinRoom = (roomId) => {
+    console.log(`JOINING ${roomId}`);
+    this.props.updateState('currentRoom', Number(roomId));
   }
 
   drawClusters = () => {

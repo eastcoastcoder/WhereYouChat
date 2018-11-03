@@ -27,6 +27,8 @@ const BITMOJI_STARTID = 270452360;
 const validRandomBitmojiIdArr = [];
 let index = 0;
 
+const EXTERNAL_FUNCS = ['joinRoom'];
+
 class MapPage extends Component {
   renderToolbar = () => <Header title="Map" />;
 
@@ -64,7 +66,21 @@ class MapPage extends Component {
     this.drawClusters();
     this.updateDimensions();
     window.addEventListener('resize', this.updateDimensions);
+    window.addEventListener('message', this.msgHandler);
     this.getCurrentBitmoji();
+  }
+
+  msgHandler = ({ data }) => {
+    let args = [];
+    const [func, remainingStr] = data.split('(');
+    if (remainingStr) args = remainingStr.slice(0, -1).split(',');
+    if (EXTERNAL_FUNCS.includes(func)) {
+      this[func](...args);
+    }
+  }
+
+  joinRoom = (idx) => {
+    console.log(`JOINING ${idx}`);
   }
 
   drawClusters = () => {
@@ -153,7 +169,7 @@ class MapPage extends Component {
         Room #${idx}<br />
         Radius: ${(targetRadius / 1000).toFixed(2)} Km<br />
         ${features.length} Users Within This Area<br />
-        <button type="button"${ptsWithin ? `onclick="joinRoom(${idx})">JOIN THIS ROOM` : 'disabled>YOU ARE OUT OF RANGE'}</button>
+        <ons-button class="button" style="margin: 6px;" ${ptsWithin ? `onclick="window.postMessage('joinRoom(${idx})', '*')">JOIN THIS ROOM` : 'disabled>YOU ARE OUT OF RANGE'}</ons-button>
       </center>
     `;
     layer.bindPopup(myPopup);

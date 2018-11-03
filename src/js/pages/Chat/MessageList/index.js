@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { css } from 'react-emotion';
 
 import Message from './Message';
+import withGlobalState from '../../../contexts/withGlobalState';
 
 
 class MessageList extends Component {
@@ -42,4 +43,4 @@ const MessageListStyle = css`
   background: white;
 `;
 
-export default MessageList;
+export default withGlobalState(MessageList);

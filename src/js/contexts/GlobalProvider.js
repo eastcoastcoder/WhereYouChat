@@ -1,11 +1,66 @@
 import React, { Component } from 'react';
+import Chatkit from '@pusher/chatkit';
 
 import GlobalContext from './GlobalContext';
+
+const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/dfaf1e22-2d33-45c9-b4f8-31f634621d24/token';
+const instanceLocator = 'v1:us1:dfaf1e22-2d33-45c9-b4f8-31f634621d24';
+const username = 'perborgen';
 
 export default class GlobalProvider extends Component {
   state = {
     currentRoom: 9806194,
+    messages: [],
   }
+  currentUser = null;
+
+  async componentDidMount() {
+    const chatManager = new Chatkit.ChatManager({
+      instanceLocator,
+      userId: username,
+      tokenProvider: new Chatkit.TokenProvider({
+        url: testToken,
+      }),
+    });
+
+    this.currentUser = await chatManager.connect();
+    console.log(await this.currentUser.getJoinableRooms());
+    await this.subscribeToRoom();
+  }
+
+  subscribeToRoom = async () => {
+    console.log(`Changing to room: ${this.state.currentRoom}`);
+    try {
+      await this.currentUser.subscribeToRoom({
+        roomId: this.state.currentRoom,
+        hooks: {
+          onNewMessage: this.onNewMessage,
+        },
+      });
+    } catch (err) {
+      console.log('error on subscribing to room: ', err);
+    }
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+    if (prevState.currentRoom !== this.state.currentRoom) {
+      await this.subscribeToRoom();
+    }
+  }
+
+  onNewMessage = (message) => {
+    this.setState({
+      messages: [...this.state.messages, message],
+    });
+  }
+
+  sendMessage = (text) => {
+    this.currentUser.sendMessage({
+      text,
+      roomId: this.state.currentRoom,
+    });
+  }
+
   updateState = (prop, value) => {
     this.setState({ [prop]: value });
   }

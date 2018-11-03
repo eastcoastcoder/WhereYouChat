@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { css } from 'react-emotion';
 
+import withGlobalState from '../../contexts/withGlobalState';
+
 class SendMessageForm extends Component {
   state = {
     message: '',
@@ -58,4 +60,4 @@ const SendMessageFormStyle = css`
   }
 `;
 
-export default SendMessageForm;
+export default withGlobalState(SendMessageForm);

@@ -262,10 +262,9 @@ function generateFakeGuid() {
 }
 
 function onEachFeature(feature, layer) {
-  if (feature.properties && feature.properties.Notes) {
+  if (feature.properties) {
     let myPopup = '<center>';
     myPopup += feature.properties.CityState ? `City: ${feature.properties.CityState}<br />` : '';
-    myPopup += feature.properties.Country ? `Country: ${feature.properties.Country}<br />` : '';
     myPopup += typeof layer.feature.properties.cluster === 'number' ? `Room #${layer.feature.properties.cluster}<br />` : '';
     myPopup += '</center>';
     layer.bindPopup(myPopup);

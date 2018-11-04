@@ -17,7 +17,6 @@ import L from 'leaflet';
 import libmoji from 'libmoji';
 import { geolocated } from 'react-geolocated';
 
-import dummyData from '../../resources/dummyData';
 import Header from '../components/Header';
 import withGlobalState from '../contexts/withGlobalState';
 
@@ -41,7 +40,7 @@ class MapPage extends Component {
     userNickname: '',
     height: 0,
     width: 0,
-    data: dummyData,
+    data: [],
     circleClusters: [],
   }
 
@@ -63,6 +62,14 @@ class MapPage extends Component {
   }
 
   async componentDidMount() {
+    const response = await fetch('https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18');
+    if (response.status === 200) {
+      const { files } = (await response.json());
+      const data = JSON.parse(files['locations.json'].content);
+      this.setState({ data });
+    } else {
+      console.log('err');
+    }
     await this.populateRandomBitmoji();
     this.drawClusters();
     this.updateDimensions();

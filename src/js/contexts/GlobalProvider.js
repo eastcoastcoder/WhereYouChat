@@ -44,6 +44,23 @@ export default class GlobalProvider extends Component {
     );
   }
 
+  async componentDidUpdate(prevProps, prevState) {
+    if (prevState.targetRoomName !== this.state.targetRoomName) {
+      await this.onRoomSwitch();
+    }
+  }
+
+  onRoomSwitch = async () => {
+    const { joinableRooms, joinedRooms } = this.state;
+    const allRooms = joinableRooms.concat(joinedRooms);
+    this.setState({
+      messages: [],
+      currentRoom: (allRooms.find(e => e.name.includes(this.state.targetRoomName))).id,
+    }, async () => {
+      await this.subscribeToRoom();
+    });
+  }
+
   subscribeToRoom = async () => {
     console.log(`Changing to room: ${this.state.currentRoom}`);
     try {
@@ -60,21 +77,6 @@ export default class GlobalProvider extends Component {
       });
     } catch (err) {
       console.log('error on subscribing to room: ', err);
-    }
-  }
-
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.targetRoomName !== this.state.targetRoomName) {
-      const { joinableRooms, joinedRooms } = this.state;
-      const allRooms = joinableRooms.concat(joinedRooms);
-      const currentRoomObj = allRooms.find(e => e.name.includes(this.state.targetRoomName));
-      const currentRoom = currentRoomObj.id;
-      this.setState({
-        messages: [],
-        currentRoom,
-      }, async () => {
-        await this.subscribeToRoom();
-      });
     }
   }
 

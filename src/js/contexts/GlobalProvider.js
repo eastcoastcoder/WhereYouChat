@@ -12,6 +12,7 @@ export default class GlobalProvider extends Component {
     joinedRooms: [],
     joinableRooms: [],
     currentRoom: -1,
+    targetRoomName: '',
     messages: [],
   }
   currentUser = null;
@@ -27,6 +28,9 @@ export default class GlobalProvider extends Component {
 
     this.currentUser = await chatManager.connect();
     const joinedRooms = this.currentUser.rooms;
+    for (const { id } of joinedRooms) {
+      await this.currentUser.leaveRoom({ roomId: id });
+    }
     const joinableRooms = await this.currentUser.getJoinableRooms();
     this.setState(
       {
@@ -49,14 +53,28 @@ export default class GlobalProvider extends Component {
           onNewMessage: this.onNewMessage,
         },
       });
+      const joinableRooms = await this.currentUser.getJoinableRooms();
+      this.setState({
+        joinableRooms,
+        joinedRooms: this.currentUser.rooms,
+      });
     } catch (err) {
       console.log('error on subscribing to room: ', err);
     }
   }
 
   async componentDidUpdate(prevProps, prevState) {
-    if (prevState.currentRoom !== this.state.currentRoom) {
-      await this.subscribeToRoom();
+    if (prevState.targetRoomName !== this.state.targetRoomName) {
+      const { joinableRooms, joinedRooms } = this.state;
+      const allRooms = joinableRooms.concat(joinedRooms);
+      const currentRoomObj = allRooms.find(e => e.name.includes(this.state.targetRoomName));
+      const currentRoom = currentRoomObj.id;
+      this.setState({
+        messages: [],
+        currentRoom,
+      }, async () => {
+        await this.subscribeToRoom();
+      });
     }
   }
 
@@ -73,16 +91,11 @@ export default class GlobalProvider extends Component {
     });
   }
 
-  updateState = (prop, value) => {
-    this.setState({ [prop]: value });
-  }
-
   render() {
-    console.log(this.state);
     return (
       <GlobalContext.Provider value={{
         ...this.state,
-        updateState: this.updateState,
+        updateState: (prop, value) => this.setState({ [prop]: value }),
         onNewMessage: this.onNewMessage,
         sendMessage: this.sendMessage,
       }}

@@ -82,9 +82,9 @@ class MapPage extends Component {
     }
   }
 
-  joinRoom = (roomId) => {
-    console.log(`JOINING ${roomId}`);
-    this.props.updateState('currentRoom', Number(roomId));
+  joinRoom = (roomNameNum) => {
+    console.log(`JOINING ${roomNameNum}`);
+    this.props.updateState('targetRoomName', `room${roomNameNum}`);
   }
 
   drawClusters = () => {
@@ -173,7 +173,11 @@ class MapPage extends Component {
         Room #${idx}<br />
         Radius: ${(targetRadius / 1000).toFixed(2)} Km<br />
         ${features.length} Users Within This Area<br />
-        <ons-button class="button" style="margin: 6px;" ${ptsWithin ? `onclick="window.postMessage('joinRoom(${idx})', '*')">JOIN THIS ROOM` : 'disabled>YOU ARE OUT OF RANGE'}</ons-button>
+        <ons-button class="button" style="margin: 6px;" ${
+          ptsWithin
+            ? `onclick="window.postMessage('joinRoom(${idx})', '*')">JOIN THIS ROOM`
+            : 'disabled>YOU ARE OUT OF RANGE'
+          }</ons-button>
       </center>
     `;
     layer.bindPopup(myPopup);

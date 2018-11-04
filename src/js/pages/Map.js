@@ -28,6 +28,7 @@ const validRandomBitmojiIdArr = [];
 let index = 0;
 
 const EXTERNAL_FUNCS = ['joinRoom'];
+// const { REACT_APP_GIST_TOKEN } = process.env;
 
 class MapPage extends Component {
   renderToolbar = () => <Header title="Map" />;
@@ -74,10 +75,19 @@ class MapPage extends Component {
     let userGuid = localStorage.getItem('guid') || this.state.userGuid;
     const userBitmojiId = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
     const userNickname = localStorage.getItem('nickname') || this.state.userNickname;
+    // "First Run"
     if (!userGuid) {
       userGuid = generateFakeGuid();
       localStorage.setItem('guid', userGuid);
     }
+    // const patchResponse = await fetch(`https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18?access_token=${REACT_APP_GIST_TOKEN}`);
+    // if (patchResponse.status === 200) {
+    //   const { files } = (await patchResponse.json());
+    //   const data = JSON.parse(files['locations.json'].content);
+    //   this.setState({ data });
+    // } else {
+    //   console.log('err');
+    // }
     this.setState({
       userGuid,
       userBitmojiId,

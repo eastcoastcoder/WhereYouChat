@@ -16,7 +16,7 @@ class Settings extends Component {
 
   onDataClear = () => {
     // TODO: Call Alert Prompt
-    localStorage.removeItem('guid');
+    // localStorage.removeItem('guid');
     localStorage.removeItem('nickname');
     localStorage.removeItem('bitmojiId');
     window.location.reload();

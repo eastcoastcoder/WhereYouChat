@@ -28,7 +28,7 @@ const validRandomBitmojiIdArr = [];
 let index = 0;
 
 const EXTERNAL_FUNCS = ['joinRoom'];
-// const { REACT_APP_GIST_TOKEN } = process.env;
+const { REACT_APP_GIST_TOKEN } = process.env;
 
 class MapPage extends Component {
   renderToolbar = () => <Header title="Map" />;
@@ -43,6 +43,7 @@ class MapPage extends Component {
     height: 0,
     width: 0,
     data: [],
+    userObject: {},
     circleClusters: [],
   }
 
@@ -64,30 +65,28 @@ class MapPage extends Component {
   }
 
   async componentDidMount() {
+    let userGuid = localStorage.getItem('guid') || this.state.userGuid;
+    let userObject;
     const response = await fetch('https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18');
     if (response.status === 200) {
       const { files } = (await response.json());
       const data = JSON.parse(files['locations.json'].content);
-      this.setState({ data });
+      userObject = data.features.find(d => d.properties.guid === userGuid) || this.state.userObject;
+      this.setState({ data, userObject });
     } else {
       console.log('err');
     }
-    let userGuid = localStorage.getItem('guid') || this.state.userGuid;
     const userBitmojiId = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
     const userNickname = localStorage.getItem('nickname') || this.state.userNickname;
     // "First Run"
     if (!userGuid) {
       userGuid = generateFakeGuid();
       localStorage.setItem('guid', userGuid);
+      if (!Object.keys(userObject).length) {
+        await this.patchNewUser(userGuid);
+      }
     }
-    // const patchResponse = await fetch(`https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18?access_token=${REACT_APP_GIST_TOKEN}`);
-    // if (patchResponse.status === 200) {
-    //   const { files } = (await patchResponse.json());
-    //   const data = JSON.parse(files['locations.json'].content);
-    //   this.setState({ data });
-    // } else {
-    //   console.log('err');
-    // }
+    // TODO: Coordinate update checking for existing users
     this.setState({
       userGuid,
       userBitmojiId,
@@ -100,6 +99,48 @@ class MapPage extends Component {
       window.addEventListener('message', this.msgHandler);
       this.getCurrentBitmoji();
     });
+  }
+
+  patchNewUser = async (guid) => {
+    const { data } = { ...this.state };
+    const { coords } = this.props;
+    const longitude = coords ? coords.longitude : NEAR_CDALE[0];
+    const latitude = coords ? coords.latitude : NEAR_CDALE[1];
+    // TODO: Add Google geocoder as CityState prop on properties
+    const userObject = {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      },
+      properties: {
+        guid,
+        CityState: '',
+      },
+    };
+    data.features.push(userObject);
+    const patchBody = {
+      files: {
+        'locations.json': {
+          content: JSON.stringify(data),
+        },
+      },
+    };
+    const patchResponse = await fetch(`https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18?access_token=${REACT_APP_GIST_TOKEN}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patchBody),
+    });
+    if (patchResponse.status === 200) {
+      this.setState({ data });
+    } else {
+      console.log('err');
+    }
+  }
+
+  async componentDidUpdate() {
+    // Coords change, call patchExistingUser
+    // Object assign new values
+    // send PATCH request
   }
 
   msgHandler = (message) => {
@@ -166,7 +207,7 @@ class MapPage extends Component {
 
   populateRandomBitmoji = async () => {
     const { data } = this.state;
-    const clustered = clustersKmeans(data, { numberOfClusters: data.features.length / 4 });
+    const clustered = clustersKmeans(data, { numberOfClusters: Math.floor(data.features.length / 4) });
     this.setState({ data: clustered }, async () => {
       while (validRandomBitmojiIdArr.length < clustered.features.length) {
         const randomNum = Math.floor(Math.random() * 1000) + 1;
@@ -193,6 +234,8 @@ class MapPage extends Component {
     this.setState({ userNickname });
   }
 
+  // TODO: Send out PATCH request to userObject with property of bitmojiId
+  // Should take precedence over in populateRandomBitmoji method
   changeBitmoji = async () => {
     const userBitmojiId = await ons.notification.prompt('Please enter your BitmojiId<br />EX: 316830037_35-s5') || DEFAULT_BITMOJI;
     localStorage.setItem('bitmojiId', userBitmojiId);

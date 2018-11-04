@@ -36,8 +36,9 @@ class MapPage extends Component {
     zoom: 15,
     loaded: false,
     bitmojiIcon: {},
-    userBitmojiID: DEFAULT_BITMOJI,
+    userBitmojiId: DEFAULT_BITMOJI,
     userNickname: '',
+    userGuid: '',
     height: 0,
     width: 0,
     data: [],
@@ -50,7 +51,7 @@ class MapPage extends Component {
     const scale = 1;
     this.setState({
       bitmojiIcon: new L.Icon({
-        iconUrl: libmoji.buildRenderUrl(standingComicId, this.state.userBitmojiID, transparent, scale),
+        iconUrl: libmoji.buildRenderUrl(standingComicId, this.state.userBitmojiId, transparent, scale),
         iconSize: [95, 95],
         iconAnchor: [50, 75],
       }),
@@ -70,12 +71,25 @@ class MapPage extends Component {
     } else {
       console.log('err');
     }
-    await this.populateRandomBitmoji();
-    this.drawClusters();
-    this.updateDimensions();
-    window.addEventListener('resize', this.updateDimensions);
-    window.addEventListener('message', this.msgHandler);
-    this.getCurrentBitmoji();
+    let userGuid = localStorage.getItem('guid') || this.state.userGuid;
+    const userBitmojiId = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
+    const userNickname = localStorage.getItem('nickname') || this.state.userNickname;
+    if (!userGuid) {
+      userGuid = generateFakeGuid();
+      localStorage.setItem('guid', userGuid);
+    }
+    this.setState({
+      userGuid,
+      userBitmojiId,
+      userNickname,
+    }, async () => {
+      await this.populateRandomBitmoji();
+      this.drawClusters();
+      this.updateDimensions();
+      window.addEventListener('resize', this.updateDimensions);
+      window.addEventListener('message', this.msgHandler);
+      this.getCurrentBitmoji();
+    });
   }
 
   msgHandler = (message) => {
@@ -165,12 +179,14 @@ class MapPage extends Component {
 
   changeNickname = async () => {
     const userNickname = await ons.notification.prompt('Please enter your Nickname<br />');
+    localStorage.setItem('nickname', userNickname);
     this.setState({ userNickname });
   }
 
   changeBitmoji = async () => {
-    const userBitmojiID = await ons.notification.prompt('Please enter your BitmojiId<br />EX: 316830037_35-s5') || DEFAULT_BITMOJI;
-    this.setState({ userBitmojiID }, () => this.getCurrentBitmoji());
+    const userBitmojiId = await ons.notification.prompt('Please enter your BitmojiId<br />EX: 316830037_35-s5') || DEFAULT_BITMOJI;
+    localStorage.setItem('bitmojiId', userBitmojiId);
+    this.setState({ userBitmojiId }, () => this.getCurrentBitmoji());
   }
 
   onEachCluster = (feature, layer, idx) => {
@@ -234,6 +250,15 @@ class MapPage extends Component {
       </Page>
     );
   }
+}
+
+function generateFakeGuid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
 function onEachFeature(feature, layer) {

@@ -44,6 +44,7 @@ class MapPage extends Component {
     width: 0,
     data: [],
     userObject: {},
+    userObjectIndex: -1,
     circleClusters: [],
   }
 
@@ -66,13 +67,16 @@ class MapPage extends Component {
 
   async componentDidMount() {
     let userGuid = localStorage.getItem('guid') || this.state.userGuid;
-    let userObject;
     const response = await fetch('https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18');
+    let userObject;
     if (response.status === 200) {
       const { files } = (await response.json());
       const data = JSON.parse(files['locations.json'].content);
-      userObject = data.features.find(d => d.properties.guid === userGuid) || this.state.userObject;
-      this.setState({ data, userObject });
+      const userObjectIndex = data.features.findIndex(d => d.properties.guid === userGuid) || this.state.userObject;
+      // Remove yourself
+      if (userObjectIndex) data.features.splice(userObjectIndex, 1);
+      userObject = userObjectIndex > -1 ? data.features[userObjectIndex] : {};
+      this.setState({ data, userObject, userObjectIndex });
     } else {
       console.log('err');
     }
@@ -102,7 +106,7 @@ class MapPage extends Component {
   }
 
   patchNewUser = async (guid) => {
-    const { data } = { ...this.state };
+    const data = { ...this.state.data };
     const { coords } = this.props;
     const longitude = coords ? coords.longitude : NEAR_CDALE[0];
     const latitude = coords ? coords.latitude : NEAR_CDALE[1];
@@ -122,7 +126,49 @@ class MapPage extends Component {
     const patchBody = {
       files: {
         'locations.json': {
-          content: JSON.stringify(data),
+          content: JSON.stringify(data, null, 2),
+        },
+      },
+    };
+    const patchResponse = await fetch(`https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18?access_token=${REACT_APP_GIST_TOKEN}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patchBody),
+    });
+    if (patchResponse.status === 200) {
+      // Don't add youself to the map with the other GeoJSON
+      // this.setState({ data });
+    } else {
+      console.log('err');
+    }
+  }
+
+  async componentDidUpdate(prevProps) {
+    if (this.state.userGuid && prevProps.coords !== this.props.coords) {
+      await this.patchExistingUser();
+    }
+  }
+
+  patchExistingUser = async () => {
+    const { data, userObject, userObjectIndex } = { ...this.state };
+    const { coords: { longitude, latitude } } = this.props;
+    if (!userObject) return;
+    // If coords are equal to existing coords, bail out
+    if (userObject.geometry.coordinates[0] === longitude ||
+        userObject.geometry.coordinates[1] === latitude) return;
+    // TODO: Add Google geocoder as CityState prop on properties
+    const modifiedUserObject = {
+      ...userObject,
+      geometry: {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      },
+      CityState: '',
+    };
+    data.features[userObjectIndex] = modifiedUserObject;
+    const patchBody = {
+      files: {
+        'locations.json': {
+          content: JSON.stringify(data, null, 2),
         },
       },
     };
@@ -135,12 +181,6 @@ class MapPage extends Component {
     } else {
       console.log('err');
     }
-  }
-
-  async componentDidUpdate() {
-    // Coords change, call patchExistingUser
-    // Object assign new values
-    // send PATCH request
   }
 
   msgHandler = (message) => {

@@ -5,6 +5,8 @@ const osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const snapchat = L.tileLayer('https://api.mapbox.com/styles/v1/nkmap/cjftto4dl8hq32rqegicxuwjz/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmttYXAiLCJhIjoiY2lwN2VqdDh2MDEzbXN5bm9hODJzZ2NlZSJ9.aVnii-A7yCa632_COjFDMQ', {maxZoom: 18});
 const fakeSnapchat = L.tileLayer('https://api.mapbox.com/styles/v1/ethanx94/cjgaaxn871il62sp1e80vkog1/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXRoYW54OTQiLCJhIjoiY2pnYWF0YWZvMW5neTJ5bXQ3d2VuaDBrcCJ9.jYfc6WsaQ7jMNm0GGr27Zw', {maxZoom: 18});
+const waze = L.tileLayer('http://livemap-tiles4.waze.com/tiles/{z}/{x}/{y}.png', {maxZoom: 18});
+
 const osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib});
 const nearCDale = new L.LatLng(37.7220, -89.2043);
 const map = new L.Map('map', {center: nearCDale, zoom: 15});
@@ -24,6 +26,7 @@ const validRandomBitmojiIdArr = [];
 L.control.layers({
   'snapchat': snapchat.addTo(map),
   'fakeSnapchat': fakeSnapchat,
+  'waze': waze,
   'osm': osm,
   'google': L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', {
     attribution: 'google'

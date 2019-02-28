@@ -1,20 +1,19 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { Page, List, ListItem } from 'react-onsenui';
 
 import Header from '../components/Header';
 
-class Settings extends Component {
-  state = {
-    listViewData: [
-      {
-        key: 'onDataClear', displayItems: ['Clear Data'], type: 'alert',
-      },
-    ],
-  };
+function Settings() {
+  const [listViewData] = useState([{
+    key: 'onDataClear',
+    callback: () => onDataClear(),
+    displayItems: ['Clear Data'],
+    type: 'alert'
+  }]);
 
-  renderToolbar = () => <Header title="Settings" />;
+  const renderToolbar = () => <Header title="Settings" />
 
-  onDataClear = () => {
+  const onDataClear = () => {
     // TODO: Call Alert Prompt
     // localStorage.removeItem('guid');
     localStorage.removeItem('nickname');
@@ -22,23 +21,21 @@ class Settings extends Component {
     window.location.reload();
   }
 
-  _renderRow = row => (
-    <ListItem key={row.key} tappable onClick={this[row.key]}>
+  const _renderRow = row => (
+    <ListItem key={row.key} tappable onClick={row.callback}>
       <div className="center">
         {row.displayItems}
       </div>
     </ListItem>)
 
-  render() {
-    return (
-      <Page renderToolbar={this.renderToolbar}>
-        <List
-          dataSource={this.state.listViewData}
-          renderRow={this._renderRow}
-        />
-      </Page>
-    );
-  }
+  return (
+    <Page renderToolbar={renderToolbar}>
+      <List
+        dataSource={listViewData}
+        renderRow={_renderRow}
+      />
+    </Page>
+  );
 }
 
 export default Settings;

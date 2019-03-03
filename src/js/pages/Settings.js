@@ -3,7 +3,7 @@ import { Page, List, ListItem } from 'react-onsenui';
 
 import Header from '../components/Header';
 
-function Settings() {
+const Settings = () => {
   const [listViewData] = useState([{
     key: 'onDataClear',
     callback: () => onDataClear(),

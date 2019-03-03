@@ -9,6 +9,7 @@ const username = 'guest';
 
 export default class GlobalProvider extends Component {
   state = {
+    loading: true,
     joinedRooms: [],
     joinableRooms: [],
     currentRoom: -1,
@@ -34,6 +35,7 @@ export default class GlobalProvider extends Component {
     const joinableRooms = await this.currentUser.getJoinableRooms();
     this.setState(
       {
+        loading: false,
         joinedRooms,
         joinableRooms,
         currentRoom: joinedRooms.length ? joinedRooms[0].id : joinableRooms[0].id,

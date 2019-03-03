@@ -1,15 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Toolbar, BackButton } from 'react-onsenui';
 
-class Header extends Component {
-  render() {
-    return (
-      <Toolbar>
-        <div className={`left ${this.props.back ? '' : 'hidden'}`}><BackButton>Back</BackButton></div>
-        <div className="center">{this.props.title}</div>
-      </Toolbar>
-    );
-  }
-}
+const Header = ({ back, title }) => (
+  <Toolbar>
+    <div className={`left ${back ? '' : 'hidden'}`}><BackButton>Back</BackButton></div>
+    <div className="center">{title}</div>
+  </Toolbar>
+);
 
 export default Header;

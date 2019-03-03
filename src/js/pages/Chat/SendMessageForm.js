@@ -1,43 +1,35 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { css } from 'react-emotion';
 
 import withGlobalState from '../../contexts/withGlobalState';
 
-class SendMessageForm extends Component {
-  state = {
-    message: '',
-  }
+const SendMessageForm = ({ sendMessage }) => {
+  const [message, setMessage] = useState('');
 
-  handleChange = (e) => {
-    this.setState({
-      message: e.target.value,
-    });
-  }
+  const handleChange = ({ target: { value } }) => {
+    setMessage(value);
+  };
 
-  handleSubmit = (e) => {
-    const { message } = this.state;
-    const { sendMessage } = this.props;
+  const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage(message);
-    this.setState({ message: '' });
-  }
+    setMessage('');
+  };
 
-  render() {
-    return (
-      <form
-        onSubmit={this.handleSubmit}
-        className={SendMessageFormStyle}
-      >
-        <input
-          onChange={this.handleChange}
-          value={this.state.message}
-          placeholder="Type your message and hit ENTER"
-          type="text"
-        />
-      </form>
-    );
-  }
-}
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className={SendMessageFormStyle}
+    >
+      <input
+        onChange={handleChange}
+        value={message}
+        placeholder="Type your message and hit ENTER"
+        type="text"
+      />
+    </form>
+  );
+};
 
 const SendMessageFormStyle = css`
   background: var(--send-message-form);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { hot } from 'react-hot-loader';
 import { Navigator } from 'react-onsenui';
 import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
@@ -18,24 +19,20 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-export default class App extends React.Component {
-  renderPage = (route, navigator) => {
-    const props = route.props || {};
-    props.navigator = navigator;
-    return React.createElement(route.component, props);
-  }
+const App = () => (
+  <GlobalProvider>
+    <Navigator
+      initialRoute={{
+        component: Main,
+        props: { key: 'main' },
+      }}
+      renderPage={(route, navigator) => {
+        const props = route.props || {};
+        props.navigator = navigator;
+        return React.createElement(route.component, props);
+      }}
+    />
+  </GlobalProvider>
+);
 
-  render() {
-    return (
-      <GlobalProvider>
-        <Navigator
-          initialRoute={{
-          component: Main,
-          props: { key: 'main' },
-        }}
-          renderPage={this.renderPage}
-        />
-      </GlobalProvider>
-    );
-  }
-}
+export default process.env.NODE_ENV === 'development' ? hot(module)(App) : App;

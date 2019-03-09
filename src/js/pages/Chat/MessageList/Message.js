@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'react-emotion';
 
-const Message = ({ message: { senderId, text } }) => (
+const Message = ({ message: { senderId, parts } }) => (
   <StyledMessage senderId={senderId}>
     <div>{senderId}</div>
-    <div>{text}</div>
+    <div>{parts[0].payload.content}</div>
   </StyledMessage>
 );
 

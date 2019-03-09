@@ -8,10 +8,10 @@ const Settings = () => {
     key: 'onDataClear',
     callback: () => onDataClear(),
     displayItems: ['Clear Data'],
-    type: 'alert'
+    type: 'alert',
   }]);
 
-  const renderToolbar = () => <Header title="Settings" />
+  const renderToolbar = () => <Header title="Settings" />;
 
   const onDataClear = () => {
     // TODO: Call Alert Prompt
@@ -19,14 +19,14 @@ const Settings = () => {
     localStorage.removeItem('nickname');
     localStorage.removeItem('bitmojiId');
     window.location.reload();
-  }
+  };
 
   const _renderRow = row => (
     <ListItem key={row.key} tappable onClick={row.callback}>
       <div className="center">
         {row.displayItems}
       </div>
-    </ListItem>)
+    </ListItem>);
 
   return (
     <Page renderToolbar={renderToolbar}>
@@ -36,6 +36,6 @@ const Settings = () => {
       />
     </Page>
   );
-}
+};
 
 export default Settings;

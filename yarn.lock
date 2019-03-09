@@ -842,12 +842,18 @@
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@onsenui/fastclick/-/fastclick-1.1.1.tgz#0708ec6c7bdca8b87a028deb0dbb66b92001f737"
 
-"@pusher/chatkit@^0.7.17":
-  version "0.7.18"
-  resolved "https://registry.yarnpkg.com/@pusher/chatkit/-/chatkit-0.7.18.tgz#7c239cfa76728a9382bb94bb1c8ddc91fdf6ce37"
+"@pusher/chatkit-client@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@pusher/chatkit-client/-/chatkit-client-1.4.0.tgz#2a97d8b281e5bebdbf2c9283382db2a72802b8e6"
+  integrity sha512-IFYw4UwB5s9uRPboZPMHkYdq2cOB7DTOH8U6zNGydMsQPo+1ukF58ErInkzBhUsS3Pw4U3DxsDwu+Id7voyUNQ==
   dependencies:
-    pusher-platform "^0.15.2"
+    "@pusher/platform" "^0.16.1"
     ramda "^0.25.0"
+
+"@pusher/platform@^0.16.1":
+  version "0.16.2"
+  resolved "https://registry.yarnpkg.com/@pusher/platform/-/platform-0.16.2.tgz#d6493b171903dd42a9fcd650a90d352af5e344c2"
+  integrity sha512-i8FHrurPFs2nmTDFHP1OMcFvtmZFGLUtOj46Ick/KOopTWnVv1FJkruMIV+wahP4mKl9e8XNzqe62HEXDh/n+A==
 
 "@svgr/babel-plugin-add-jsx-attribute@^4.0.0":
   version "4.0.0"
@@ -8570,10 +8576,6 @@ punycode@2.x.x, punycode@^2.1.0, punycode@^2.1.1:
 punycode@^1.2.4, punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
-
-pusher-platform@^0.15.2:
-  version "0.15.4"
-  resolved "https://registry.yarnpkg.com/pusher-platform/-/pusher-platform-0.15.4.tgz#0b177ff43fc598e04aac72a627acd95feac16f53"
 
 q@1.4.1:
   version "1.4.1"

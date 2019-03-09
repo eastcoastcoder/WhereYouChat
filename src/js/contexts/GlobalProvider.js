@@ -1,111 +1,102 @@
-import React, { Component } from 'react';
-import Chatkit from '@pusher/chatkit';
+import React, { useState } from 'react';
+import { ChatManager, TokenProvider } from '@pusher/chatkit-client';
 
 import GlobalContext from './GlobalContext';
+import useEffectAsync from '../util/useEffectAsync';
 
 const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/a8e4bc30-e708-47f9-adc9-da1adc1fc273/token';
 const instanceLocator = 'v1:us1:a8e4bc30-e708-47f9-adc9-da1adc1fc273';
 const username = 'guest';
 
-export default class GlobalProvider extends Component {
-  state = {
-    loading: true,
-    joinedRooms: [],
-    joinableRooms: [],
-    currentRoom: -1,
-    targetRoomName: '',
-    messages: [],
-  }
-  currentUser = null;
+const GlobalProvider = ({ children }) => {
+  const [loading, setLoading] = useState(true);
+  const [joinedRooms, setJoinedRooms] = useState([]);
+  const [joinableRooms, setJoinableRooms] = useState([]);
+  const [roomId, setRoomId] = useState(-1);
+  const [targetRoomName, setTargetRoomName] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState(null);
 
-  async componentDidMount() {
-    const chatManager = new Chatkit.ChatManager({
+  // async componentDidMount
+  useEffectAsync(async () => {
+    const chatManager = new ChatManager({
       instanceLocator,
       userId: username,
-      tokenProvider: new Chatkit.TokenProvider({
+      tokenProvider: new TokenProvider({
         url: testToken,
       }),
     });
-
-    this.currentUser = await chatManager.connect();
-    const joinedRooms = this.currentUser.rooms;
-    for (const { id } of joinedRooms) {
-      await this.currentUser.leaveRoom({ roomId: id });
+    const currentUser = await chatManager.connect();
+    setUser(currentUser);
+    for (const { id } of currentUser.rooms) {
+      await currentUser.leaveRoom({ roomId: id });
     }
-    const joinableRooms = await this.currentUser.getJoinableRooms();
-    this.setState(
-      {
-        loading: false,
-        joinedRooms,
-        joinableRooms,
-        currentRoom: joinedRooms.length ? joinedRooms[0].id : joinableRooms[0].id,
-      },
-      async () => {
-        await this.subscribeToRoom();
-      },
-    );
-  }
+    const newJoinableRooms = await currentUser.getJoinableRooms();
+    const currentRoom = currentUser.rooms.length ? currentUser.rooms[0].id : newJoinableRooms[0].id;
+    await subscribeToRoom(currentUser, currentRoom);
+    setRoomId(currentRoom);
+  }, []);
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.targetRoomName !== this.state.targetRoomName) {
-      await this.onRoomSwitch();
+  // async componentDidUpdate
+  useEffectAsync(async () => {
+    if (!user) {
+      return;
     }
-  }
-
-  onRoomSwitch = async () => {
-    const { joinableRooms, joinedRooms } = this.state;
     const allRooms = joinableRooms.concat(joinedRooms);
-    this.setState({
-      messages: [],
-      currentRoom: (allRooms.find(e => e.name.includes(this.state.targetRoomName))).id,
-    }, async () => {
-      await this.subscribeToRoom();
-    });
-  }
+    setMessages([]);
+    const currentRoomId = (allRooms.find(e => e.name.includes(targetRoomName))).id;
+    await subscribeToRoom(user, roomId);
+    setRoomId(currentRoomId);
+    setLoading(false);
+  }, [targetRoomName]);
 
-  subscribeToRoom = async () => {
-    console.log(`Changing to room: ${this.state.currentRoom}`);
+
+  const subscribeToRoom = async (currentUser, currentRoomId) => {
+    console.log(`Changing to room: ${currentRoomId}`);
     try {
-      await this.currentUser.subscribeToRoom({
-        roomId: this.state.currentRoom,
+      await currentUser.subscribeToRoomMultipart({
+        roomId: currentRoomId,
         hooks: {
-          onNewMessage: this.onNewMessage,
+          onMessage,
         },
+        messageLimit: 100,
       });
-      const joinableRooms = await this.currentUser.getJoinableRooms();
-      this.setState({
-        joinableRooms,
-        joinedRooms: this.currentUser.rooms,
-      });
+      setJoinableRooms(await currentUser.getJoinableRooms());
+      setJoinedRooms(currentUser.rooms);
     } catch (err) {
       console.log('error on subscribing to room: ', err);
     }
-  }
+  };
 
-  onNewMessage = (message) => {
-    this.setState({
-      messages: [...this.state.messages, message],
-    });
-  }
+  const onMessage = (message) => {
+    setMessages(prevMessages => [
+      ...prevMessages,
+      message,
+    ]);
+  };
 
-  sendMessage = (text) => {
-    this.currentUser.sendMessage({
+  const sendMessage = (text) => {
+    user.sendSimpleMessage({
+      roomId,
       text,
-      roomId: this.state.currentRoom,
     });
-  }
+  };
 
-  render() {
-    return (
-      <GlobalContext.Provider value={{
-        ...this.state,
-        updateState: (prop, value) => this.setState({ [prop]: value }),
-        onNewMessage: this.onNewMessage,
-        sendMessage: this.sendMessage,
+  return (
+    <GlobalContext.Provider value={{
+        loading,
+        // joinedRooms,
+        // joinableRooms,
+        // roomId,
+        // targetRoomName,
+        messages,
+        setTargetRoomName,
+        sendMessage,
       }}
-      >
-        {this.props.children}
-      </GlobalContext.Provider>
-    );
-  }
-}
+    >
+      {children}
+    </GlobalContext.Provider>
+  );
+};
+
+export default GlobalProvider;

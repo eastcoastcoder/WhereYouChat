@@ -5,7 +5,7 @@
   "homepage": "./",
   "dependencies": {
     "@hot-loader/react-dom": "hot-loader/react-dom",
-    "@pusher/chatkit": "^0.7.17",
+    "@pusher/chatkit-client": "^1.4.0",
     "@turf/turf": "^5.1.6",
     "emotion": "^9.2.6",
     "emotion-server": "^9.2.6",

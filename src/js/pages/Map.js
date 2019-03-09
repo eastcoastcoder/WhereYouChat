@@ -196,7 +196,7 @@ class MapPage extends Component {
 
   joinRoom = (roomNameNum) => {
     console.log(`JOINING ${roomNameNum}`);
-    this.props.updateState('targetRoomName', `room${roomNameNum}`);
+    this.props.setTargetRoomName(`room${roomNameNum}`);
   }
 
   drawClusters = () => {
@@ -306,8 +306,8 @@ class MapPage extends Component {
       <Page renderToolbar={this.renderToolbar}>
         {!loaded
         ? 'Loading...'
-        // : !isGeolocationAvailable || !isGeolocationEnabled
-          // ? <div>Problem obtaining GPS coordinates</div>
+        : !isGeolocationAvailable || !isGeolocationEnabled
+          ? <div>Problem obtaining GPS coordinates</div>
           : !coords
             ? 'Loading...'
             : (

@@ -1,0 +1,370 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4298401,
+          38.7131073
+        ]
+      },
+      "properties": {
+        "CityState": "Maryland Heights, MO"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.9141607,
+          38.1200538
+        ]
+      },
+      "properties": {
+        "CityState": "Santa Claus, IN"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6297982,
+          41.8781136
+        ]
+      },
+      "properties": {
+        "CityState": "Chicago, IL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3709489,
+          38.7714396
+        ]
+      },
+      "properties": {
+        "CityState": "Hazlewood, MO"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -89.5181476,
+          37.3058839
+        ]
+      },
+      "properties": {
+        "CityState": "Cape Girardeau, MO"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.6000478,
+          37.0833893
+        ]
+      },
+      "properties": {
+        "CityState": "Paducah, KY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -89.2167501,
+          37.7272727
+        ]
+      },
+      "properties": {
+        "CityState": "Carbondale, IL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.9331256,
+          37.7306054
+        ]
+      },
+      "properties": {
+        "CityState": "Marion, IL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.1994042,
+          38.6270025
+        ]
+      },
+      "properties": {
+        "CityState": "St Louis, MO"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8254829,
+          39.7970043
+        ]
+      },
+      "properties": {
+        "CityState": "Clifton, OH"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.7948103,
+          26.1420358
+        ]
+      },
+      "properties": {
+        "CityState": "Naples, FL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -92.6179621,
+          38.1503113
+        ]
+      },
+      "properties": {
+        "CityState": "Osage Beach, MO"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.4472802,
+          25.0865151
+        ]
+      },
+      "properties": {
+        "CityState": "Key Largo, FL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1373174,
+          26.1224386
+        ]
+      },
+      "properties": {
+        "CityState": "Fort Lauderdale, FL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1300455,
+          25.790654
+        ]
+      },
+      "properties": {
+        "CityState": "Miami Beach, FL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6380256,
+          35.4437078
+        ]
+      },
+      "properties": {
+        "CityState": "Yokohama"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7741464,
+          35.7022051
+        ]
+      },
+      "properties": {
+        "CityState": "Akihabra"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5466868,
+          35.3192254
+        ]
+      },
+      "properties": {
+        "CityState": "Kamkura"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6917064,
+          35.6894875
+        ]
+      },
+      "properties": {
+        "CityState": "Tokyo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.1069375,
+          35.2323553
+        ]
+      },
+      "properties": {
+        "CityState": "Hakone"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.7081293,
+          41.3308666
+        ]
+      },
+      "properties": {
+        "CityState": "Marseilles, IL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.6326234,
+          38.3498195
+        ]
+      },
+      "properties": {
+        "CityState": "Charleston, WV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.977985,
+          36.8529263
+        ]
+      },
+      "properties": {
+        "CityState": "Virginia Beach, VA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.8866943,
+          33.6890603
+        ]
+      },
+      "properties": {
+        "CityState": "Myrtle Beach, SC"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.0348144,
+          34.0007104
+        ]
+      },
+      "properties": {
+        "CityState": "Columbia, SC"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.5101638,
+          35.714259
+        ]
+      },
+      "properties": {
+        "CityState": "Gatlinburg, TN"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.1876578,
+          35.9670412
+        ]
+      },
+      "properties": {
+        "CityState": "Newport, TN"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -89.2043,
+          37.722
+        ]
+      },
+      "properties": {
+        "guid": "d9fadeeb-2685-d664-12fe-0861e2ef172d",
+        "CityState": ""
+      }
+    }
+  ]
+}

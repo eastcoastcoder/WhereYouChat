@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import ons from 'onsenui';
 import {
   clustersKmeans,
@@ -18,7 +18,8 @@ import libmoji from 'libmoji';
 import { geolocated } from 'react-geolocated';
 
 import Header from '../components/Header';
-import withGlobalState from '../contexts/withGlobalState';
+import useEffectAsync from '../util/useEffectAsync';
+import GlobalContext from '../contexts/GlobalContext';
 import dummyData from '../../data/locations.json';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -32,45 +33,45 @@ let index = 0;
 const EXTERNAL_FUNCS = ['joinRoom'];
 const { REACT_APP_GIST_TOKEN } = process.env;
 
-class MapPage extends Component {
-  renderToolbar = () => <Header title="Map" />;
+const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
+  const renderToolbar = () => <Header title="Map" />;
 
-  state = {
-    zoom: 15,
-    componentLoading: true,
-    bitmojiIcon: {},
-    userBitmojiId: DEFAULT_BITMOJI,
-    userNickname: '',
-    userGuid: '',
-    height: 0,
-    width: 0,
-    data: [],
-    userObject: {},
-    userObjectIndex: -1,
-    circleClusters: [],
-  }
+  const { setTargetRoomName } = useContext(GlobalContext);
+  const [zoom, setZoom] = useState(15);
+  const [loaded, setLoaded] = useState(false);
+  const [bitmojiIcon, setBitmojiIcon] = useState({});
+  const [userBitmojiId, setUserBitmojiId] = useState(DEFAULT_BITMOJI);
+  const [userNickname, setUserNickname] = useState('');
+  const [userGuid, setUserGuid] = useState('');
+  const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(0);
+  const [data, setData] = useState([]);
+  const [userObject, setUserObject] = useState({});
+  const [userObjectIndex, setUserObjectIndex] = useState(-1);
+  const [clusteredByGroup, setClusteredByGroup] = useState([]);
+  const [circleClusters, setCircleClusters] = useState([]);
 
-  getCurrentBitmoji = () => {
+  const getCurrentBitmoji = (userBitmojiIdLocal) => {
     const standingComicId = '10220709';
     const transparent = Number(true);
     const scale = 1;
-    this.setState({
-      bitmojiIcon: new L.Icon({
-        iconUrl: libmoji.buildRenderUrl(standingComicId, this.state.userBitmojiId, transparent, scale),
-        iconSize: [95, 95],
-        iconAnchor: [50, 75],
-      }),
+    const bitmojiIconLocal = new L.Icon({
+      iconUrl: libmoji.buildRenderUrl(standingComicId, userBitmojiIdLocal, transparent, scale),
+      iconSize: [95, 95],
+      iconAnchor: [50, 75],
     });
-  }
+    setBitmojiIcon(bitmojiIconLocal);
+  };
 
-  updateDimensions = () => {
-    this.setState({ width: window.innerWidth, height: window.innerHeight - HEADER_HEIGHT });
-  }
+  const updateDimensions = () => {
+    setWidth(window.innerWidth);
+    setHeight(window.innerHeight - HEADER_HEIGHT);
+  };
 
-  async componentDidMount() {
-    let userGuid = localStorage.getItem('guid') || this.state.userGuid;
+  useEffectAsync(async () => {
+    let userGuidResult = localStorage.getItem('guid') || userGuid;
     const response = await fetch('https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18');
-    let userObject;
+    let userObjectResult = {};
     let dataResult = { features: [] };
     if (isDev || response.status === 200) {
       if (isDev) {
@@ -79,46 +80,45 @@ class MapPage extends Component {
         const { files } = await response.json();
         dataResult = JSON.parse(files['locations.json'].content);
       }
-      const userObjectIndex = dataResult.features.findIndex(d => d.properties.guid === userGuid) || this.state.userObject;
+      const userObjectIndexResult = dataResult.features.findIndex(d => d.properties.guid === userGuidResult) || userObjectResult;
       // Remove yourself
-      if (userObjectIndex) dataResult.features.splice(userObjectIndex, 1);
-      userObject = userObjectIndex > -1 ? dataResult.features[userObjectIndex] : {};
-      this.setState({ dataResult, userObject, userObjectIndex });
+      if (userObjectIndexResult) dataResult.features.splice(userObjectIndexResult, 1);
+      userObjectResult = userObjectIndexResult > -1 ? dataResult.features[userObjectIndexResult] : {};
+      setData(dataResult);
+      setUserObject(userObjectResult);
+      setUserObjectIndex(userObjectIndexResult);
     } else {
       console.log('err');
     }
-    const userBitmojiId = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
-    const userNickname = localStorage.getItem('nickname') || this.state.userNickname;
+    const userBitmojiIdResult = localStorage.getItem('bitmojiId') || userBitmojiId;
+    const userNicknameResult = localStorage.getItem('nickname') || userNickname;
     // "First Run"
-    if (!userGuid) {
-      userGuid = generateFakeGuid();
-      localStorage.setItem('guid', userGuid);
-      if (!Object.keys(userObject).length) {
-        await this.patchNewUser(userGuid);
+    if (!userGuidResult) {
+      userGuidResult = generateFakeGuid();
+      localStorage.setItem('guid', userGuidResult);
+      if (!Object.keys(userObjectResult).length) {
+        await patchNewUser(userGuid);
       }
     }
     // TODO: Coordinate update checking for existing users
-    this.setState({
-      userGuid,
-      userBitmojiId,
-      userNickname,
-    }, async () => {
-      await this.populateRandomBitmoji(dataResult);
-      this.drawClusters();
-      this.updateDimensions();
-      window.addEventListener('resize', this.updateDimensions);
-      window.addEventListener('message', this.msgHandler);
-      this.getCurrentBitmoji();
-    });
-  }
+    setUserGuid(userGuidResult);
+    setUserBitmojiId(userBitmojiIdResult);
+    setUserNickname(userNicknameResult);
+    // TODO: ensure after state change or pass args into functions
+    await populateRandomBitmoji(dataResult);
+    drawClusters(dataResult);
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    window.addEventListener('message', msgHandler);
+    getCurrentBitmoji(userBitmojiIdResult);
+  }, []);
 
-  patchNewUser = async (guid) => {
-    const data = { ...this.state.data };
-    const { coords } = this.props;
+  const patchNewUser = async (guid) => {
+    const dataCopy = { ...data };
     const longitude = coords ? coords.longitude : NEAR_CDALE[0];
     const latitude = coords ? coords.latitude : NEAR_CDALE[1];
     // TODO: Add Google geocoder as CityState prop on properties
-    const userObject = {
+    const userObjectLocal = {
       type: 'Feature',
       geometry: {
         type: 'Point',
@@ -129,11 +129,11 @@ class MapPage extends Component {
         CityState: '',
       },
     };
-    data.features.push(userObject);
+    dataCopy.features.push(userObjectLocal);
     const patchBody = {
       files: {
         'locations.json': {
-          content: JSON.stringify(data, null, 2),
+          content: JSON.stringify(dataCopy, null, 2),
         },
       },
     };
@@ -147,21 +147,22 @@ class MapPage extends Component {
     } else {
       console.log('err');
     }
-  }
+  };
 
-  async componentDidUpdate(prevProps) {
-    if (this.state.userGuid && prevProps.coords !== this.props.coords) {
-      await this.patchExistingUser();
-    }
-  }
+  // TODO: Don't execute on first run
+  useEffectAsync(async () => {
+    if (!loaded) return () => {};
+    // await patchExistingUser();
+  }, [userGuid, coords]);
 
-  patchExistingUser = async () => {
-    const { data, userObject, userObjectIndex } = { ...this.state };
-    const { coords: { longitude, latitude } } = this.props;
-    if (!Object.keys(userObject).length) return;
+  const patchExistingUser = async () => {
+    const dataCopy = { ...data };
+    const userObjectCopy = { ...userObject };
+    const { longitude, latitude } = coords;
+    if (!userObjectCopy) return;
     // If coords are equal to existing coords, bail out
-    if (userObject.geometry.coordinates[0] === longitude ||
-        userObject.geometry.coordinates[1] === latitude) return;
+    if (userObjectCopy.geometry.coordinates[0] === longitude ||
+       userObjectCopy.geometry.coordinates[1] === latitude) return;
     // TODO: Add Google geocoder as CityState prop on properties
     const modifiedUserObject = {
       ...userObject,
@@ -171,11 +172,11 @@ class MapPage extends Component {
       },
       CityState: '',
     };
-    data.features[userObjectIndex] = modifiedUserObject;
+    dataCopy.features[userObjectIndex] = modifiedUserObject;
     const patchBody = {
       files: {
         'locations.json': {
-          content: JSON.stringify(data, null, 2),
+          content: JSON.stringify(dataCopy, null, 2),
         },
       },
     };
@@ -184,40 +185,40 @@ class MapPage extends Component {
       body: JSON.stringify(patchBody),
     });
     if (patchResponse.status === 200) {
-      this.setState({ data });
+      setData(dataCopy);
     } else {
       console.log('err');
     }
-  }
+  };
 
-  msgHandler = (message) => {
+  // TODO: Take out class bindings
+  const msgHandler = (message) => {
     let args = [];
     let func;
     let remainingStr;
     if (typeof message.data === 'string') [func, remainingStr] = message.data.split('(');
     if (remainingStr) args = remainingStr.slice(0, -1).split(',');
     if (EXTERNAL_FUNCS.includes(func)) {
-      this[func](...args);
+      [func](...args);
     }
-  }
+  };
 
-  joinRoom = (roomNameNum) => {
+  const joinRoom = (roomNameNum) => {
     console.log(`JOINING ${roomNameNum}`);
-    this.props.setTargetRoomName(`room${roomNameNum}`);
-  }
+    setTargetRoomName(`room${roomNameNum}`);
+  };
 
-  drawClusters = () => {
-    const { data, circleClusters } = this.state;
-    const { coords } = this.props;
+  const drawClusters = (dataLocal) => {
+    const circleClustersLocal = [];
     const longitude = coords ? coords.longitude : NEAR_CDALE[0];
     const latitude = coords ? coords.latitude : NEAR_CDALE[1];
-    const clusteredByGroup = calcuateClusteredByGroup(data);
-    for (let i = 0; i < clusteredByGroup.length; i++) {
-      const myBboxPolygon = bboxPolygon(bbox(clusteredByGroup[i]));
+    const clusteredByGroupResult = calcuateClusteredByGroup(dataLocal);
+    for (let i = 0; i < clusteredByGroupResult.length; i++) {
+      const myBboxPolygon = bboxPolygon(bbox(clusteredByGroupResult[i]));
       const midpoint = center(myBboxPolygon).geometry.coordinates;
       const minRadius = length(lineString([midpoint, myBboxPolygon.geometry.coordinates[0][0]]), { units: 'meters' });
       let potentialRadius;
-      switch (clusteredByGroup[i].features.length) {
+      switch (clusteredByGroupResult[i].features.length) {
         case 6:
           potentialRadius = 250000;
           break;
@@ -244,73 +245,67 @@ class MapPage extends Component {
       const curCircle = circle(midpoint, targetRadius, { units: 'meters' });
       const curLocation = point([longitude, latitude]);
 
-      clusteredByGroup[i].ptsWithin = booleanPointInPolygon(curLocation, curCircle);
-      clusteredByGroup[i].targetRadius = targetRadius;
-      clusteredByGroup[i].midpoint = midpoint;
-      circleClusters.push(curCircle);
+      clusteredByGroupResult[i].ptsWithin = booleanPointInPolygon(curLocation, curCircle);
+      clusteredByGroupResult[i].targetRadius = targetRadius;
+      clusteredByGroupResult[i].midpoint = midpoint;
+      circleClustersLocal.push(curCircle);
     }
-    this.setState({ clusteredByGroup, circleClusters });
-  }
+    setClusteredByGroup(clusteredByGroupResult);
+    setCircleClusters(circleClustersLocal);
+  };
 
-  populateRandomBitmoji = async (dataLocal) => {
+  const populateRandomBitmoji = async (dataLocal) => {
     const clustered = clustersKmeans(dataLocal, { numberOfClusters: Math.floor(dataLocal.features.length / 4) });
-    this.setState({ data: clustered }, async () => {
-      while (validRandomBitmojiIdArr.length < clustered.features.length) {
-        const randomNum = Math.floor(Math.random() * 1000) + 1;
-        const bitmojiId = (BITMOJI_STARTID - randomNum);
-        const url = 'https://images.bitmoji.com/render/panel/10220709-' + bitmojiId + '_2-s1-v1.png?transparent=1';
-        const response = await fetch(url);
-        if (response.status === 200) {
-          validRandomBitmojiIdArr.push(bitmojiId);
-        } else {
-          await this.populateRandomBitmoji(clustered);
-        }
+    setData(clustered);
+    while (validRandomBitmojiIdArr.length < clustered.features.length) {
+      const randomNum = Math.floor(Math.random() * 1000) + 1;
+      const bitmojiId = (BITMOJI_STARTID - randomNum);
+      const url = 'https://images.bitmoji.com/render/panel/10220709-' + bitmojiId + '_2-s1-v1.png?transparent=1';
+      const response = await fetch(url);
+      if (response.status === 200) {
+        validRandomBitmojiIdArr.push(bitmojiId);
+      } else {
+        await populateRandomBitmoji(clustered);
       }
-      this.setState({ componentLoading: false });
-    });
-  }
+    }
+    setLoaded(true);
+  };
 
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.updateDimensions);
-  }
+  useEffect(() => () => window.removeEventListener('resize', updateDimensions), []);
 
-  changeNickname = async () => {
-    const userNickname = await ons.notification.prompt('Please enter your Nickname<br />');
-    localStorage.setItem('nickname', userNickname);
-    this.setState({ userNickname });
-  }
+  const changeNickname = async () => {
+    const userNicknameResult = await ons.notification.prompt('Please enter your Nickname<br />');
+    localStorage.setItem('nickname', userNicknameResult);
+    setUserNickname(userNicknameResult);
+  };
 
   // TODO: Send out PATCH request to userObject with property of bitmojiId
   // Should take precedence over in populateRandomBitmoji method
-  changeBitmoji = async () => {
-    const userBitmojiId = await ons.notification.prompt('Please enter your BitmojiId<br />EX: 316830037_35-s5') || DEFAULT_BITMOJI;
-    localStorage.setItem('bitmojiId', userBitmojiId);
-    this.setState({ userBitmojiId }, () => this.getCurrentBitmoji());
-  }
+  const changeBitmoji = async () => {
+    const userBitmojiIdResult = await ons.notification.prompt('Please enter your BitmojiId<br />EX: 316830037_35-s5') || DEFAULT_BITMOJI;
+    localStorage.setItem('bitmojiId', userBitmojiIdResult);
+    setUserBitmojiId(userBitmojiIdResult);
+    getCurrentBitmoji(userBitmojiIdResult);
+  };
 
-  onEachCluster = (feature, layer, idx) => {
-    const { targetRadius, features, ptsWithin } = this.state.clusteredByGroup[idx];
+  const onEachCluster = (feature, layer, idx) => {
+    const { targetRadius, features, ptsWithin } = clusteredByGroup[idx];
     const myPopup = `
       <center>
         Room #${idx}<br />
         Radius: ${(targetRadius / 1000).toFixed(2)} Km<br />
         ${features.length} Users Within This Area<br />
-        <ons-button class="button" style="margin: 6px;" ${
-          ptsWithin
-            ? `onclick="window.postMessage('joinRoom(${idx})', '*')">JOIN THIS ROOM`
-            : 'disabled>YOU ARE OUT OF RANGE'
-          }</ons-button>
+        <ons-button class="button" style="margin: 6px;" ${ptsWithin
+    ? `onclick="window.postMessage('joinRoom(${idx})', '*')">JOIN THIS ROOM`
+    : 'disabled>YOU ARE OUT OF RANGE'}</ons-button>
       </center>
     `;
     layer.bindPopup(myPopup);
-  }
+  };
 
-  render() {
-    const { componentLoading, data, zoom, height, width, bitmojiIcon, circleClusters } = this.state;
-    const { loading, isGeolocationAvailable, isGeolocationEnabled, coords } = this.props;
-    return (
-      <Page renderToolbar={this.renderToolbar}>
-        {componentLoading || loading
+  return (
+    <Page renderToolbar={renderToolbar}>
+      {!loaded
         ? 'Loading...'
         : !isGeolocationAvailable || !isGeolocationEnabled
           ? <div>Problem obtaining GPS coordinates</div>
@@ -327,29 +322,33 @@ class MapPage extends Component {
                 <Marker key="myPosition" position={[coords.latitude, coords.longitude]} icon={bitmojiIcon} >
                   <Popup offset={[0, -50]}>
                     <center>
-                      <h2>{this.state.userNickname ? `${this.state.userNickname} Is Here` : 'You Are Here'}</h2>
+                      <h2>{userNickname ? `${userNickname} Is Here` : 'You Are Here'}</h2>
                       <Button
                         style={{ margin: '6px' }}
-                        onClick={async () => this.changeNickname()}
+                        onClick={async () => changeNickname()}
                       >Change Nickname
                       </Button>
                       <Button
                         style={{ margin: '6px' }}
-                        onClick={async () => this.changeBitmoji()}
+                        onClick={async () => changeBitmoji()}
                       >Change Bitmoji
                       </Button>
                     </center>
                   </Popup>
                 </Marker>
                 {/* Load Others */}
-                <GeoJSON key="others-geojson" data={data} onEachFeature={onEachFeature} pointToLayer={pointToLayer} />
+                <GeoJSON
+                  key="others-geojson"
+                  data={data}
+                  onEachFeature={onEachFeature}
+                  pointToLayer={pointToLayer}
+                />
                 {/* Load Circle Clusters */}
-                {circleClusters.length ? circleClusters.map((circleCluster, idx) => <GeoJSON key={'circle-cluster-geojson-' + idx} data={circleCluster} onEachFeature={(feature, layer) => this.onEachCluster(feature, layer, idx)} />) : null}
+                {circleClusters.length ? circleClusters.map((circleCluster, idx) => <GeoJSON key={'circle-cluster-geojson-' + idx} data={circleCluster} onEachFeature={(feature, layer) => onEachCluster(feature, layer, idx)} />) : null}
               </Map>)}
-      </Page>
-    );
-  }
-}
+    </Page>
+  );
+};
 
 function generateFakeGuid() {
   function s4() {
@@ -381,9 +380,9 @@ function pointToLayer(_, latlng) {
   });
 }
 
-function calcuateClusteredByGroup(data) {
+function calcuateClusteredByGroup(dataLocal) {
   const clusteredByGroup = [];
-  for (const cluster of data.features) {
+  for (const cluster of dataLocal.features) {
     if (!clusteredByGroup[cluster.properties.cluster]) clusteredByGroup[cluster.properties.cluster] = { type: 'FeatureCollection', features: [] };
     clusteredByGroup[cluster.properties.cluster].features.push(cluster);
   }
@@ -399,4 +398,4 @@ export default geolocated({
     enableHighAccuracy: false,
   },
   userDecisionTimeout: 5000,
-})(withGlobalState(MapPage));
+})(MapPage);

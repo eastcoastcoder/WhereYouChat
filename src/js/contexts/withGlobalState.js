@@ -8,8 +8,7 @@ const withGlobalState = (InputComponent) =>
       return (
         <GlobalContext.Consumer>
           {context => (
-            !context.loading
-            && <InputComponent {...this.props} {...context} />)}
+            <InputComponent {...this.props} {...context} />)}
         </GlobalContext.Consumer>
       );
     }

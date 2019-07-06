@@ -15,7 +15,7 @@ const GlobalProvider = ({ children }) => {
   const [roomId, setRoomId] = useState(-1);
   const [targetRoomName, setTargetRoomName] = useState('');
   const [messages, setMessages] = useState([]);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
 
   // async componentDidMount
   useEffectAsync(async () => {
@@ -35,20 +35,21 @@ const GlobalProvider = ({ children }) => {
     const currentRoom = currentUser.rooms.length ? currentUser.rooms[0].id : newJoinableRooms[0].id;
     await subscribeToRoom(currentUser, currentRoom);
     setRoomId(currentRoom);
+    setLoading(false);
   }, []);
 
   // async componentDidUpdate
   useEffectAsync(async () => {
-    if (!user) {
-      return;
+    if (!Object.keys(user).length || targetRoomName === '') {
+      return () => {};
     }
     const allRooms = joinableRooms.concat(joinedRooms);
     setMessages([]);
     const currentRoomId = (allRooms.find(e => e.name.includes(targetRoomName))).id;
-    await subscribeToRoom(user, roomId);
+    await subscribeToRoom(user, currentRoomId);
     setRoomId(currentRoomId);
     setLoading(false);
-  }, [targetRoomName]);
+  }, [user, targetRoomName]);
 
 
   const subscribeToRoom = async (currentUser, currentRoomId) => {

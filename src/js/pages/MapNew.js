@@ -38,7 +38,7 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
 
   const { setTargetRoomName } = useContext(GlobalContext);
   const [zoom, setZoom] = useState(15);
-  const [loaded, setLoaded] = useState(false);
+  const [componentLoading, setLoading] = useState(false);
   const [bitmojiIcon, setBitmojiIcon] = useState({});
   const [userBitmojiId, setUserBitmojiId] = useState(DEFAULT_BITMOJI);
   const [userNickname, setUserNickname] = useState('');
@@ -50,23 +50,6 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
   const [userObjectIndex, setUserObjectIndex] = useState(-1);
   const [clusteredByGroup, setClusteredByGroup] = useState([]);
   const [circleClusters, setCircleClusters] = useState([]);
-
-  const getCurrentBitmoji = (userBitmojiIdLocal) => {
-    const standingComicId = '10220709';
-    const transparent = Number(true);
-    const scale = 1;
-    const bitmojiIconLocal = new L.Icon({
-      iconUrl: libmoji.buildRenderUrl(standingComicId, userBitmojiIdLocal, transparent, scale),
-      iconSize: [95, 95],
-      iconAnchor: [50, 75],
-    });
-    setBitmojiIcon(bitmojiIconLocal);
-  };
-
-  const updateDimensions = () => {
-    setWidth(window.innerWidth);
-    setHeight(window.innerHeight - HEADER_HEIGHT);
-  };
 
   useEffectAsync(async () => {
     let userGuidResult = localStorage.getItem('guid') || userGuid;
@@ -97,7 +80,7 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
       userGuidResult = generateFakeGuid();
       localStorage.setItem('guid', userGuidResult);
       if (!Object.keys(userObjectResult).length) {
-        await patchNewUser(userGuid);
+        await patchNewUser(userGuidResult);
       }
     }
     // TODO: Coordinate update checking for existing users
@@ -112,6 +95,23 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
     window.addEventListener('message', msgHandler);
     getCurrentBitmoji(userBitmojiIdResult);
   }, []);
+
+  const getCurrentBitmoji = (userBitmojiIdLocal) => {
+    const standingComicId = '10220709';
+    const transparent = Number(true);
+    const scale = 1;
+    const bitmojiIconLocal = new L.Icon({
+      iconUrl: libmoji.buildRenderUrl(standingComicId, userBitmojiIdLocal, transparent, scale),
+      iconSize: [95, 95],
+      iconAnchor: [50, 75],
+    });
+    setBitmojiIcon(bitmojiIconLocal);
+  };
+
+  const updateDimensions = () => {
+    setWidth(window.innerWidth);
+    setHeight(window.innerHeight - HEADER_HEIGHT);
+  };
 
   const patchNewUser = async (guid) => {
     const dataCopy = { ...data };
@@ -151,7 +151,7 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
 
   // TODO: Don't execute on first run
   useEffectAsync(async () => {
-    if (!loaded) return () => {};
+    if (componentLoading) return () => {};
     // await patchExistingUser();
   }, [userGuid, coords]);
 
@@ -268,7 +268,7 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
         await populateRandomBitmoji(clustered);
       }
     }
-    setLoaded(true);
+    setLoading(false);
   };
 
   useEffect(() => () => window.removeEventListener('resize', updateDimensions), []);
@@ -305,7 +305,7 @@ const MapPage = ({ isGeolocationAvailable, isGeolocationEnabled, coords }) => {
 
   return (
     <Page renderToolbar={renderToolbar}>
-      {!loaded
+      {componentLoading
         ? 'Loading...'
         : !isGeolocationAvailable || !isGeolocationEnabled
           ? <div>Problem obtaining GPS coordinates</div>

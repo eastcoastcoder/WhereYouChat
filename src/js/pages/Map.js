@@ -50,27 +50,10 @@ class MapPage extends Component {
     circleClusters: [],
   }
 
-  getCurrentBitmoji = () => {
-    const standingComicId = '10220709';
-    const transparent = Number(true);
-    const scale = 1;
-    this.setState({
-      bitmojiIcon: new L.Icon({
-        iconUrl: libmoji.buildRenderUrl(standingComicId, this.state.userBitmojiId, transparent, scale),
-        iconSize: [95, 95],
-        iconAnchor: [50, 75],
-      }),
-    });
-  }
-
-  updateDimensions = () => {
-    this.setState({ width: window.innerWidth, height: window.innerHeight - HEADER_HEIGHT });
-  }
-
   async componentDidMount() {
-    let userGuid = localStorage.getItem('guid') || this.state.userGuid;
+    let userGuidResult = localStorage.getItem('guid') || this.state.userGuid;
     const response = await fetch('https://api.github.com/gists/cf064f2d044da0e6f0824ae54122aa18');
-    let userObject;
+    let userObjectResult = {};
     let dataResult = { features: [] };
     if (isDev || response.status === 200) {
       if (isDev) {
@@ -79,37 +62,57 @@ class MapPage extends Component {
         const { files } = await response.json();
         dataResult = JSON.parse(files['locations.json'].content);
       }
-      const userObjectIndex = dataResult.features.findIndex(d => d.properties.guid === userGuid) || this.state.userObject;
+      const userObjectIndexResult = dataResult.features.findIndex(d => d.properties.guid === userGuidResult) || this.state.userObject; // What is this?
       // Remove yourself
-      if (userObjectIndex) dataResult.features.splice(userObjectIndex, 1);
-      userObject = userObjectIndex > -1 ? dataResult.features[userObjectIndex] : {};
-      this.setState({ dataResult, userObject, userObjectIndex });
+      if (userObjectIndexResult) dataResult.features.splice(userObjectIndexResult, 1);
+      userObjectResult = userObjectIndexResult > -1 ? dataResult.features[userObjectIndexResult] : {};
+      this.setState({
+        data: dataResult,
+        userObject: userObjectResult,
+        userObjectIndex: userObjectIndexResult,
+      });
     } else {
       console.log('err');
     }
-    const userBitmojiId = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
-    const userNickname = localStorage.getItem('nickname') || this.state.userNickname;
+    const userBitmojiIdResult = localStorage.getItem('bitmojiId') || this.state.userBitmojiId;
+    const userNicknameResult = localStorage.getItem('nickname') || this.state.userNickname;
     // "First Run"
-    if (!userGuid) {
-      userGuid = generateFakeGuid();
-      localStorage.setItem('guid', userGuid);
-      if (!Object.keys(userObject).length) {
-        await this.patchNewUser(userGuid);
+    if (!userGuidResult) {
+      userGuidResult = generateFakeGuid();
+      localStorage.setItem('guid', userGuidResult);
+      if (!Object.keys(userObjectResult).length) {
+        await this.patchNewUser(userGuidResult);
       }
     }
     // TODO: Coordinate update checking for existing users
     this.setState({
-      userGuid,
-      userBitmojiId,
-      userNickname,
-    }, async () => {
-      await this.populateRandomBitmoji(dataResult);
-      this.drawClusters();
-      this.updateDimensions();
-      window.addEventListener('resize', this.updateDimensions);
-      window.addEventListener('message', this.msgHandler);
-      this.getCurrentBitmoji();
+      userGuid: userGuidResult,
+      userBitmojiId: userBitmojiIdResult,
+      userNickname: userNicknameResult,
     });
+    const clusteredData = await this.populateRandomBitmoji(dataResult);
+    this.drawClusters();
+    this.updateDimensions();
+    window.addEventListener('resize', this.updateDimensions);
+    window.addEventListener('message', this.msgHandler);
+    this.getCurrentBitmoji(userBitmojiIdResult);
+  }
+
+  getCurrentBitmoji = (userBitmojiIdLocal) => {
+    const standingComicId = '10220709';
+    const transparent = Number(true);
+    const scale = 1;
+    this.setState({
+      bitmojiIcon: new L.Icon({
+        iconUrl: libmoji.buildRenderUrl(standingComicId, userBitmojiIdLocal, transparent, scale),
+        iconSize: [95, 95],
+        iconAnchor: [50, 75],
+      }),
+    });
+  }
+
+  updateDimensions = () => {
+    this.setState({ width: window.innerWidth, height: window.innerHeight - HEADER_HEIGHT });
   }
 
   patchNewUser = async (guid) => {
@@ -207,17 +210,18 @@ class MapPage extends Component {
   }
 
   drawClusters = () => {
-    const { data, circleClusters } = this.state;
+    const circleClustersLocal = [];
+    const { data } = this.state;
     const { coords } = this.props;
     const longitude = coords ? coords.longitude : NEAR_CDALE[0];
     const latitude = coords ? coords.latitude : NEAR_CDALE[1];
-    const clusteredByGroup = calcuateClusteredByGroup(data);
-    for (let i = 0; i < clusteredByGroup.length; i++) {
-      const myBboxPolygon = bboxPolygon(bbox(clusteredByGroup[i]));
+    const clusteredByGroupResult = calcuateClusteredByGroup(data);
+    for (let i = 0; i < clusteredByGroupResult.length; i++) {
+      const myBboxPolygon = bboxPolygon(bbox(clusteredByGroupResult[i]));
       const midpoint = center(myBboxPolygon).geometry.coordinates;
       const minRadius = length(lineString([midpoint, myBboxPolygon.geometry.coordinates[0][0]]), { units: 'meters' });
       let potentialRadius;
-      switch (clusteredByGroup[i].features.length) {
+      switch (clusteredByGroupResult[i].features.length) {
         case 6:
           potentialRadius = 250000;
           break;
@@ -244,12 +248,15 @@ class MapPage extends Component {
       const curCircle = circle(midpoint, targetRadius, { units: 'meters' });
       const curLocation = point([longitude, latitude]);
 
-      clusteredByGroup[i].ptsWithin = booleanPointInPolygon(curLocation, curCircle);
-      clusteredByGroup[i].targetRadius = targetRadius;
-      clusteredByGroup[i].midpoint = midpoint;
-      circleClusters.push(curCircle);
+      clusteredByGroupResult[i].ptsWithin = booleanPointInPolygon(curLocation, curCircle);
+      clusteredByGroupResult[i].targetRadius = targetRadius;
+      clusteredByGroupResult[i].midpoint = midpoint;
+      circleClustersLocal.push(curCircle);
     }
-    this.setState({ clusteredByGroup, circleClusters });
+    this.setState({
+      clusteredByGroup: clusteredByGroupResult,
+      circleClusters: circleClustersLocal,
+    });
   }
 
   populateRandomBitmoji = async (dataLocal) => {
@@ -381,9 +388,9 @@ function pointToLayer(_, latlng) {
   });
 }
 
-function calcuateClusteredByGroup(data) {
+function calcuateClusteredByGroup(dataLocal) {
   const clusteredByGroup = [];
-  for (const cluster of data.features) {
+  for (const cluster of dataLocal.features) {
     if (!clusteredByGroup[cluster.properties.cluster]) clusteredByGroup[cluster.properties.cluster] = { type: 'FeatureCollection', features: [] };
     clusteredByGroup[cluster.properties.cluster].features.push(cluster);
   }

@@ -21,7 +21,7 @@
     "react-hot-loader": "^4.12.3",
     "react-leaflet": "^2.4.0",
     "react-onsenui": "^1.11.2",
-    "react-scripts": "^2.1.8"
+    "react-scripts": "^5.0.1"
   },
   "devDependencies": {
     "@hot-loader/react-dom": "github:hot-loader/react-dom",
